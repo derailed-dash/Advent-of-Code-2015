@@ -1,0 +1,7 @@
+__pycache__
+.vscode
+.*-env/
+desktop.ini
+message.txt
+snippet.py
+output/

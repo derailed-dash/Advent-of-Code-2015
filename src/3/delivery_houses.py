@@ -4,8 +4,6 @@ Date: 13/01/2021
 
 Solving https://adventofcode.com/2015/day/3
 
-Boxes given in axbxc format.
-
 Part 1:
     Given input of directions in >^<v format, count how many locations were visited.
 

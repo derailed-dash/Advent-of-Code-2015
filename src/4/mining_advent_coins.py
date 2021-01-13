@@ -27,6 +27,7 @@ def main():
     counter = 0
     while True:
         input = hash_seed + str(counter)
+        # Create byte equivalent of input string, then generate md5 hexdigest.
         hash_hex = hashlib.md5(input.encode()).hexdigest()
         counter += 1
         if hash_hex.startswith("000000"):

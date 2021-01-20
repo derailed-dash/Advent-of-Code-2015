@@ -1,0 +1,10 @@
+toggle 1,6 through 2,6
+turn off 17 through 22
+turn off 6 through 13
+turn off 8 through 16
+turn on 19 through 21
+turn on 17 through 26
+turn on 10 through 19
+turn off 4 through 6
+toggle 5 through 15
+toggle 20 through 29

@@ -8,8 +8,9 @@ Configure 1m lights in a 1000x1000 grid, by following a set of instructions.
 Lights begin turned off.
 Coords are 0-indexed
 
-Solution 2 of 2:
-    Use numpy 2D array.  This is about 20x faster than using dicts!
+Solution 3 of 3:
+    Use numpy 2D array.  
+    This is about 35x faster than using dicts!
 
 
 Part 1:

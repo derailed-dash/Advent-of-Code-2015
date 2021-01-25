@@ -8,10 +8,10 @@ Configure 1m lights in a 1000x1000 grid, by following a set of instructions.
 Lights begin turned off.
 Coords are 0-indexed
 
-Solution 1 of 3:
-    Uses a defaultdict to create a dict of dicts, to represent a 2D array.
+Solution 2 of 3:
+    Uses a list of lists to represent a 2D array.  Easy to index.
     Each element initialised to False.
-    This is quite slow.  Takes about 7s for both parts.
+    This is quite slow.  Marginally faster than dict of dicts.  Takes about 5s for both parts.
 
 Part 1:
     Instructions require lights to be toggled, turned on, or off.
@@ -44,26 +44,31 @@ def main():
     dim_length = 1000
 
     # Part 1
-    lights = defaultdict(dict)
-    # create a dict for every lights[i]
-    for i in range(dim_length):
-        for j in range(dim_length):
-            lights[i][j] = False
+    # Create a list of lists
+    light_rows = []
+    for _ in range(dim_length):
+        light_row = []
+        for _ in range(dim_length):
+            light_row.append(False)
+        
+        light_rows.append(light_row)
 
-    process_instructions(data, lights)
+    process_instructions(data, light_rows)
 
-    count_lights_on = sum(1 if lights[i][j] else 0 for j in range(dim_length) for i in range(dim_length))
+    count_lights_on = sum(1 if light_rows[i][j] else 0 for j in range(dim_length) for i in range(dim_length))
     print(f"Part 1, lights on: {count_lights_on}")
 
     # Part 2
-    lights = defaultdict(dict)
-    # create a dict for every lights[i]
-    for i in range(dim_length):
-        for j in range(dim_length):
-            lights[i][j] = 0
+    light_rows = []
+    for _ in range(dim_length):
+        light_row = []
+        for _ in range(dim_length):
+            light_row.append(0)
+        
+        light_rows.append(light_row)
 
-    process_variable_brightness_instructions(data, lights)
-    total_brightness = sum(lights[i][j] for j in range(dim_length) for i in range(dim_length))
+    process_variable_brightness_instructions(data, light_rows)
+    total_brightness = sum(light_rows[i][j] for j in range(dim_length) for i in range(dim_length))
     print(f"Part 2, brightness: {total_brightness}")
 
 def process_variable_brightness_instructions(data, lights):

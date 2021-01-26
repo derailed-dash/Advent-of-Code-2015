@@ -1,13 +1,12 @@
 """ 
 Author: Darren
-Date: 14/01/2021
+Date: 26/01/2021
 
 Solving https://adventofcode.com/2015/day/7
 
 A value, a gate or a wire provide signals to a wire: 1-to-1.
 Wires carry 16 bit (0-65535) signals.
 Wires can provide a signal to multiple destinations: 1-to-many.
-Gates only provide signal when all inputs have a signal.
 
 Instructions like:
 123 -> x
@@ -20,11 +19,20 @@ NOT x -> h
 NOT y -> i
 
 Solution 1 of 1:
+    Use Parsimonious PEG to perform depth-first parsing of instructions.
+    Instructions are out of order, so parse what we can, 
+    and use a stack to park what we can't process until the next pass.
+    For NOT gate, use ~ and then AND with all 1s, to ensure we don't return negative value.
 
 Part 1:
+    Just process the instructions, and return the value of wire a.
 
 Part 2:
-
+    Set wire b input signal to be the signal solution to Part 1.
+    Solve for a new answer to wire a.
+    Requires changing 19138 -> b to <value for a> -> b.
+    Use regex to get the index of the only instruction that ends "-> b" and replace the instruction in the data.
+    Then re-run the parse.
 """
 import sys
 import os
@@ -140,6 +148,22 @@ def main():
     blc_visitor = BitwiseLogicVisitor()
     blc_visitor.grammar = grammar
 
+    # Part 1
+    # Pass in a copy of the input data, as we'll need to parse it again for Part 2
+    results = process_instructions(data.copy(), blc_visitor)
+    a_val = results['a']
+    print(f"Part 1: Value of input a is {a_val}")
+
+    # Part 2
+    wire_b_instr = list(filter(re.compile(r"-> b$").search, data))
+    wire_b_instr_index = data.index(*wire_b_instr)
+    data[wire_b_instr_index] = f"{a_val} -> b"
+
+    results = process_instructions(data.copy(), blc_visitor)
+    print(f"Part 2: Value of input a is {results['a']}")
+
+
+def process_instructions(data, blc_visitor):
     results = {}
 
     # treat all our input as a stack.  
@@ -163,9 +187,9 @@ def main():
         # We're ready to process the list again.  
         # Add back in all the instructions we failed to parse last time
         data.extend(not_ready_to_parse)
+    
+    return results
 
-    pp(results)
-    print(f"Value of input a is {results['a']}")
 
 if __name__ == "__main__":
     t1 = time.perf_counter()

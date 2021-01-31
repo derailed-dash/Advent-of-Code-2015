@@ -90,7 +90,7 @@ class BitwiseLogicVisitor(NodeVisitor):
         elif "NOT" in self._op:
             # The ~ operator in Python may return a signed -ve value.
             # We don't want this, so we & with 16 bit of 1s to convert to +ve representation
-            res = ~self._inputs[0] & 65535
+            res = ~self._inputs[0] & 0xFFFF
         else:
             # In reality, this is likely just passing through a list with only one value
             res = sum(self._inputs)

@@ -48,21 +48,13 @@ def main():
     journey_distances = []
 
     # create permutations of all possible combinations of locations
-    perms = list(permutations(locations))
-    for perm in perms:
+    for perm in permutations(locations):
         journey_dist = 0
         for i in range(len(perm)-1):
             # iterate through location pairs i, i+1, for all locations in this permutation
             start = perm[i]
             end = perm [i+1]
-            try:
-                # find the matching distance for this pair
-                dist_index = next(index for index, distance in enumerate(distances) if distance[0] == tuple([start, end]))
-            except:
-                # If we hit an exception, the pair wasn't found.
-                # That means the tuple had start and end the wrong way around.  Reverse and try again.
-                dist_index = next(index for index, distance in enumerate(distances) if distance[0] == tuple([end, start]))
-            
+            dist_index = next(index for index, distance in enumerate(distances) if distance[0] == tuple([start, end]))
             journey_dist += distances[dist_index][1]
         
         journey_distances.append(journey_dist)
@@ -76,12 +68,14 @@ def get_distances(data):
     distance_match = re.compile(r"^(\w+) to (\w+) = (\d+)")
     
     for line in data:
-        match = distance_match.match(line)
-        if match:
-            start = match.groups()[0]
-            end = match.groups()[1]
-            dist = int(match.groups()[2])
-            distances.append([tuple([start, end]), dist])
+        start, end, dist = distance_match.match(line).groups()
+        dist = int(dist)
+
+        # create a distance record in the form: [(loc_1, loc_2), dist]
+        # And also store it in reverse, so that when we look it up, 
+        # it doesn't matter which order the locations come in the journey.
+        distances.append([tuple([start, end]), dist])
+        distances.append([tuple([end, start]), dist])
 
     return distances
 

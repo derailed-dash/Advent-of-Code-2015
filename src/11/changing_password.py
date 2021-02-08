@@ -35,7 +35,7 @@ def main():
     print(new_pwd)
 
 
-def find_next_password(new_pwd):
+def find_next_password(new_pwd: str):
     new_pwd_valid = False
     while not new_pwd_valid:
         try:
@@ -64,7 +64,7 @@ def increment_pwd(pwd):
     return new_pwd
 
 
-def next_char(a_char):
+def next_char(a_char: str):
     if (a_char != 'z'):
         # get ascii code, add 1, then convert back to a char
         return chr(ord(a_char)+1)

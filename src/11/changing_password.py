@@ -16,14 +16,13 @@ Solution:
     Regex to match char straights, two pairs of chars, and to exclude certain chars.
     For the two pairs, return them and check they're not the same.  E.g. bb and bb is no good.
 """
-import sys
-import os
 import time
 import re
 
 STRAIGHT_MATCH = re.compile(r"abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz")
 PAIRS_CHARS_MATCH = re.compile(r"(.)\1.*(.)\2")
 BAD_CHARS_MATCH = re.compile(r"[iol]")
+
 
 def main():
     old_pwd = 'cqjxjnds'

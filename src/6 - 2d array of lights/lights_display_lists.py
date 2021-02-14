@@ -11,7 +11,7 @@ Coords are 0-indexed
 Solution 2 of 3:
     Uses a list of lists to represent a 2D array.  Easy to index.
     Each element initialised to False.
-    This is quite slow.  Marginally faster than dict of dicts.  Takes about 5s for both parts.
+    This is quite slow.  Twice as fast as dict of dicts.  Takes about 5s for both parts.
 
 Part 1:
     Instructions require lights to be toggled, turned on, or off.

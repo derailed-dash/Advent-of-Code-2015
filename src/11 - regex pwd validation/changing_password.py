@@ -19,8 +19,11 @@ Solution:
 import time
 import re
 
+# validate straight
 STRAIGHT_MATCH = re.compile(r"abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz")
+# Two non-overlapping pairs of any character
 PAIRS_CHARS_MATCH = re.compile(r"(.)\1.*(.)\2")
+# match any of i, o, u
 BAD_CHARS_MATCH = re.compile(r"[iol]")
 
 

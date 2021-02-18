@@ -65,6 +65,13 @@ class Ingredient:
     CALORIES = "calories"
 
     def __init__(self, name: str, properties: dict) -> None:
+        """Input name and props.
+
+        Args:
+            name (str): name of this ingredient
+            properties (dict): k:v pairs of all props for this ingredient
+                Note that we pop 'calories' and store as a separate property
+        """
         self._name = name
         self._properties = properties
         self._calories = self._properties.pop(Ingredient.CALORIES)
@@ -96,9 +103,8 @@ def main():
         # e.g. with 2 ingredients, a combo might be [44, 56]
         prop_scores = defaultdict(int)
         calories = 0
-        for i, qty in enumerate(combo):
-            ingr: Ingredient
-            ingr = ingr_list[i]
+        ingr: Ingredient
+        for qty, ingr in zip(combo, ingr_list):
             for prop, value in ingr.get_properties().items():
                 prop_scores[prop] += qty * value
 

@@ -28,7 +28,7 @@ import sys
 import os
 import time
 from itertools import permutations
-from math import comb, prod as prod
+from math import prod
 from collections import defaultdict
 
 SCRIPT_DIR = os.path.dirname(__file__) 
@@ -48,10 +48,10 @@ class Cookie:
     def get_combo(self):
         return self._combo
     
-    def get_calories(self):
+    def get_calories(self) -> int:
         return self._calories
 
-    def get_score(self):
+    def get_score(self) -> int:
         return self._score
 
     def __str__(self) -> str:
@@ -118,14 +118,21 @@ def main():
         cookies.append(Cookie(combo, total_score, calories))
     
     # Let's reduce our cookies down to only those with positive scores
+    print(f"A total of {len(cookies)} cookie recipes.")
     cookies = [cookie for cookie in cookies if cookie.get_score() > 0]
-    best_cookie = max(cookies, key=lambda x: x.get_score())
+    print(f"{len(cookies)} with a positive score.")
+    best_cookie = max(cookies, key=get_cookie_score)
     print(f"Best cookie: {best_cookie}")
 
     # Part 2
     fixed_cal_cookies = [cookie for cookie in cookies if cookie.get_calories() == CAL_TARGET]
-    best_fixed_cal_cookie = max(fixed_cal_cookies, key=lambda x: x.get_score())
+    print(f"{len(fixed_cal_cookies)} positive scoring cookies at {CAL_TARGET} calories.")
+    best_fixed_cal_cookie = max(fixed_cal_cookies, key=get_cookie_score)
     print(f"Best {CAL_TARGET} calorie cookie: {best_fixed_cal_cookie}")
+
+
+def get_cookie_score(cookie: Cookie) -> int:
+    return cookie.get_score()
 
 
 def find_combos(target: int, terms: int) -> list: 

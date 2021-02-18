@@ -4,26 +4,61 @@ Date: 16/02/2021
 
 Solving https://adventofcode.com/2015/day/15
 
-// Overview
+Cookie recipes contain exactly 100 spoonfulls of ingredients.
+Each ingredient is made up of 5 properties: capacity, durability, flavour, texture, calories.
+Each ingredient has a score for each of these properties.
+Score of each property = qty1 * ingr1 + qt2 * ingr2... (or 0 if score is -ve)
 
+Overall cookie score = product of all properties
 
 Solution:
 
 Part 1:
+    Get all permutations of quantities that sum to 100, 
+    where the number of quantities is the number of ingredients.
+    For each combo of ingredients, compute sum of quantities * prop.
+    Cookie class to store combo, score, and calories.
+    Determine score of best cookie.    
 
 Part 2:
-
+    Filter cookies list where calories == 500.
+    Repeat approach to get cookie with highest score, from this new subset.
 """
 import sys
 import os
 import time
 from itertools import permutations
-from math import prod as prod
+from math import comb, prod as prod
 from collections import defaultdict
 
 SCRIPT_DIR = os.path.dirname(__file__) 
 INPUT_FILE = "input/input.txt"
 SAMPLE_INPUT_FILE = "input/sample_input.txt"
+
+CAL_TARGET = 500
+INGREDIENT_QTY = 100
+
+
+class Cookie:
+    def __init__(self, combo: tuple, score: int, calories:int) -> None:
+        self._combo = combo
+        self._score = score
+        self._calories = calories
+
+    def get_combo(self):
+        return self._combo
+    
+    def get_calories(self):
+        return self._calories
+
+    def get_score(self):
+        return self._score
+
+    def __str__(self) -> str:
+        return f"{str(self._combo)}, cals={self.get_calories()}, score={self.get_score()}"
+
+    def __repr__(self):
+        return (f"{self.__class__.__name__}: {self.__str__()}")
 
 
 class Ingredient:
@@ -55,26 +90,36 @@ def main():
 
     ingr_list = process_ingredients(data)
 
-    cookies = {}
-    combos = find_combos(100, len(ingr_list))
+    cookies = []
+    combos = find_combos(INGREDIENT_QTY, len(ingr_list))
     for combo in combos:
         # e.g. with 2 ingredients, a combo might be [44, 56]
         prop_scores = defaultdict(int)
+        calories = 0
         for i, qty in enumerate(combo):
             ingr: Ingredient
             ingr = ingr_list[i]
             for prop, value in ingr.get_properties().items():
                 prop_scores[prop] += qty * value
 
+            calories += qty * ingr.get_calories()
+
         for prop, value in prop_scores.items():
             if value < 0:
                 prop_scores[prop] = 0
     
         total_score = prod(prop_scores.values())
-        cookies[combo] = total_score
+        cookies.append(Cookie(combo, total_score, calories))
     
-    best_cookie = max(cookies.items(), key=lambda x: x[1])
-    print(f"Best cookie {best_cookie[0]} with score: {best_cookie[1]}")
+    # Let's reduce our cookies down to only those with positive scores
+    cookies = [cookie for cookie in cookies if cookie.get_score() > 0]
+    best_cookie = max(cookies, key=lambda x: x.get_score())
+    print(f"Best cookie: {best_cookie}")
+
+    # Part 2
+    fixed_cal_cookies = [cookie for cookie in cookies if cookie.get_calories() == CAL_TARGET]
+    best_fixed_cal_cookie = max(fixed_cal_cookies, key=lambda x: x.get_score())
+    print(f"Best {CAL_TARGET} calorie cookie: {best_fixed_cal_cookie}")
 
 
 def find_combos(target: int, terms: int) -> list: 

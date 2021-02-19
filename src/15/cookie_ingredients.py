@@ -11,11 +11,16 @@ Score of each property = qty1 * ingr1 + qt2 * ingr2... (or 0 if score is -ve)
 
 Overall cookie score = product of all properties
 
-Solution:
+Solution 1 of 2:
+    Determine possible permutations by finding all combinations first (with replacement),
+    and then expanding to permutations of those combinations.
 
 Part 1:
     Get all permutations of quantities that sum to 100, 
     where the number of quantities is the number of ingredients.
+    Note that Python permutations function is not suitable, as it doesn't allow for repeating quantities in our 100g.
+    So, we can either use catesian product (slow @13s, because there are many results), or we can use
+    combinations_with_replacement, and then expand these to the possible permutations of those combinations. (Much faster: 1.5s.)
     For each combo of ingredients, compute sum of quantities * prop.
     Cookie class to store combo, score, and calories.
     Determine score of best cookie.    
@@ -27,7 +32,7 @@ Part 2:
 import sys
 import os
 import time
-from itertools import permutations
+from itertools import permutations, combinations_with_replacement
 from math import prod
 from collections import defaultdict
 
@@ -98,13 +103,16 @@ def main():
     ingr_list = process_ingredients(data)
 
     cookies = []
-    combos = find_combos(INGREDIENT_QTY, len(ingr_list))
-    for combo in combos:
+    # right, this is the slow bit!!
+    perms = find_permutations(INGREDIENT_QTY, len(ingr_list))
+
+    print(f"Got {len(perms)} combos.")
+    for perm in perms:
         # e.g. with 2 ingredients, a combo might be [44, 56]
         prop_scores = defaultdict(int)
         calories = 0
         ingr: Ingredient
-        for qty, ingr in zip(combo, ingr_list):
+        for qty, ingr in zip(perm, ingr_list):
             for prop, value in ingr.get_properties().items():
                 prop_scores[prop] += qty * value
 
@@ -115,10 +123,12 @@ def main():
                 prop_scores[prop] = 0
     
         total_score = prod(prop_scores.values())
-        cookies.append(Cookie(combo, total_score, calories))
+        cookies.append(Cookie(perm, total_score, calories))
     
     # Let's reduce our cookies down to only those with positive scores
     print(f"A total of {len(cookies)} cookie recipes.")
+    # for i, cookie in enumerate(cookies):
+        # print(f"{i}\t{cookie.get_combo()}")    
     cookies = [cookie for cookie in cookies if cookie.get_score() > 0]
     print(f"{len(cookies)} with a positive score.")
     best_cookie = max(cookies, key=get_cookie_score)
@@ -135,10 +145,12 @@ def get_cookie_score(cookie: Cookie) -> int:
     return cookie.get_score()
 
 
-def find_combos(target: int, terms: int) -> list: 
-    """Return all combinations of terms that sum to the target numberself.
-    E.g. if target = 5 and terms = 2, the results would be:
-    (0, 5), (1, 4), (2, 3), (3, 2), (4, 1), (5, 0)
+def find_permutations(target: int, terms: int) -> list: 
+    """Return all permutations of terms that sum to the target numberself.
+    We need to include repeats (e.g. 5, 5 would be valid), so we need to use cartesian product with repeats, 
+    not permutations.
+    E.g. if target = 6 and terms = 2, the results would be:
+    (0, 6), (1, 5), (2, 4), (3, 3), (4, 2), (5, 1), (6, 0)
 
     Args:
         target (int): The sum our terms need to add up to
@@ -147,7 +159,13 @@ def find_combos(target: int, terms: int) -> list:
     Returns:
         list: Tuples of valid term combinations
     """
-    return [combo for combo in permutations(range(target), terms) if sum(combo) == target] 
+    combos = [combo for combo in combinations_with_replacement(range(target), terms) if sum(combo) == target]
+    perms_of_combos = set()
+    for combo in combos:
+        for perm in permutations(combo):
+            perms_of_combos.add(perm) 
+    
+    return perms_of_combos
 
 
 def process_ingredients(data: list):

@@ -70,7 +70,7 @@ def find_max_score(ingredients: list, current_ingr: int, ingr_masses: list, rema
 
     Args:
         ingredients ([list]): list of ingredients
-        current_ingr ([int]): [description]
+        current_ingr ([int]): current ingr index
         ingr_masses ([list]): list of masses, for each ingredient
         remaining_weight ([int]): ingredients weight left to add
 
@@ -80,7 +80,6 @@ def find_max_score(ingredients: list, current_ingr: int, ingr_masses: list, rema
     # we're on the last ingredient
     if current_ingr == len(ingredients)-1:
         ingr_masses[current_ingr] = remaining_weight
-        global cookies
         if ingredient_prop_score(ingredients, ingr_masses, "cal") != CAL_TARGET: return 0
         return score(ingredients, ingr_masses)
 

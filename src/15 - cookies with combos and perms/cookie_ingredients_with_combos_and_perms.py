@@ -103,7 +103,6 @@ def main():
     ingr_list = process_ingredients(data)
 
     cookies = []
-    # right, this is the slow bit!!
     perms = find_permutations(INGREDIENT_QTY, len(ingr_list))
 
     print(f"Got {len(perms)} combos.")
@@ -125,10 +124,9 @@ def main():
         total_score = prod(prop_scores.values())
         cookies.append(Cookie(perm, total_score, calories))
     
-    # Let's reduce our cookies down to only those with positive scores
     print(f"A total of {len(cookies)} cookie recipes.")
-    # for i, cookie in enumerate(cookies):
-        # print(f"{i}\t{cookie.get_combo()}")    
+
+    # Let's reduce our cookies down to only those with positive scores
     cookies = [cookie for cookie in cookies if cookie.get_score() > 0]
     print(f"{len(cookies)} with a positive score.")
     best_cookie = max(cookies, key=get_cookie_score)
@@ -147,10 +145,13 @@ def get_cookie_score(cookie: Cookie) -> int:
 
 def find_permutations(target: int, terms: int) -> list: 
     """Return all permutations of terms that sum to the target numberself.
-    We need to include repeats (e.g. 5, 5 would be valid), so we need to use cartesian product with repeats, 
-    not permutations.
+    We need to include repeats (e.g. 5, 5 would be valid), so we could use cartesian product with repeats.
+    But finding combinations_with_replacement is much quicker and returns a much smaller set.
     E.g. if target = 6 and terms = 2, the results would be:
-    (0, 6), (1, 5), (2, 4), (3, 3), (4, 2), (5, 1), (6, 0)
+    (0, 6), (1, 5), (2, 4), (3, 3)
+
+    Then we determine the permutations for each combo.  
+    E.g. perms for (0, 6) would be (0, 6) and (6, 0)
 
     Args:
         target (int): The sum our terms need to add up to

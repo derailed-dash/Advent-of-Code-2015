@@ -18,12 +18,11 @@ Part 2:
     Use a defaultdict(int) to store the points.
     Determine which reindeer has the most points at t=2503.
 """
-import sys
 import os
-import time
 import re
-from collections import namedtuple
-from collections import defaultdict
+import sys
+import time
+from collections import defaultdict, namedtuple
 
 SCRIPT_DIR = os.path.dirname(__file__) 
 INPUT_FILE = "input/input.txt"

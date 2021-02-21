@@ -4,7 +4,7 @@ Vary the RANGE_SIZE and TERMS to see impact on efficiency
 from itertools import combinations_with_replacement, permutations, combinations, product
 import time
 
-RANGE = 100
+RANGE = 50
 TERMS = 4
 TARGET = 100
 
@@ -59,23 +59,22 @@ def recursive_sub_sum(terms, target):
                 yield [i] + value
 
 functions_list = []
-functions_list.append(use_perms)
-functions_list.append(use_combos)
-functions_list.append(use_product)
-functions_list.append(use_combos_with_replacement)
+functions_list.append(tuple([use_combos]))
+functions_list.append(tuple([use_product]))
+functions_list.append(tuple([use_perms]))
+functions_list.append(tuple([use_combos_with_replacement]))
+functions_list.append(tuple([use_perms_of_combos, use_combos_with_replacement]))
 
 for func in functions_list:
     t1 = time.perf_counter()
-    result = func()
+    if len(func) == 2:
+        # the 2nd item is a function.  The functions all return data in element [1]
+        result = func[0](func[1]()[1])
+    else:
+        result = func[0]()
     # print(f"{result[0]}: {result[1]}")
     t2 = time.perf_counter()
     print(f"Execution time for {result[0]}: {t2 - t1:0.4f} seconds, with {len(result[1])} items")
-
-t1 = time.perf_counter()
-result = use_perms_of_combos(use_combos_with_replacement()[1])
-# print(f"{result[0]}: {result[1]}")
-t2 = time.perf_counter()
-print(f"Execution time for {result[0]}: {t2 - t1:0.4f} seconds, with {len(result[1])} items")
 
 t1 = time.perf_counter()
 recursive_perms = list(recursive_sub_sum(TERMS, TARGET))

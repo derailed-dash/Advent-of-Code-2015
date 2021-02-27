@@ -4,9 +4,9 @@ Vary the RANGE_SIZE and TERMS to see impact on efficiency
 from itertools import combinations_with_replacement, permutations, combinations, product
 import time
 
-RANGE = 50
-TERMS = 4
-TARGET = 100
+RANGE = 500
+TERMS = 3
+TARGET = 10
 
 # Get all permutations, but note that (5, 5) is not a valid permutation
 # since 5 only appears in the range once

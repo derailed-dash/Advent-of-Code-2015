@@ -67,10 +67,9 @@ def subset_sum(numbers: list, target: int, partial=[], results=[]):
     if s >= target:
         return
 
-    for i in range(len(numbers)):
-        n = numbers[i]
-        remaining = numbers[i + 1:]
-        subset_sum(remaining, target, partial + [n], results)
+    for i, n in enumerate(numbers):
+        remaining_numbers = numbers[i + 1:]
+        subset_sum(remaining_numbers, target, partial + [n], results)
 
     return results
 

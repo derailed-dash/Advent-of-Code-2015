@@ -3,6 +3,7 @@ __pycache__
 .*-env/
 desktop.ini
 message.txt
+pylintrc
 snippets/
 output/
 activate.ps1

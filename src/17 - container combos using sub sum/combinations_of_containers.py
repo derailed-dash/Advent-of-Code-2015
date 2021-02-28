@@ -13,10 +13,9 @@ Part 2:
     Determine the minimum number of containers to achieve the target.
     Determine how many combinations there are, using this minimum number of containers.
 """
-import sys
+from __future__ import absolute_import
 import os
 import time
-from itertools import combinations
 
 SCRIPT_DIR = os.path.dirname(__file__) 
 INPUT_FILE = "input/input.txt"
@@ -54,7 +53,7 @@ def subset_sum(numbers: list, target: int, partial=[], results=[]):
         results (list, optional): Used by the function. Defaults to [].
 
     Returns:
-        [type]: The list of valid combinations
+        [list]: The list of valid combinations
     """
     s = sum(partial)
 

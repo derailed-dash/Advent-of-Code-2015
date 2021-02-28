@@ -43,6 +43,7 @@ def main():
     print(f"Number of combos only using the minimum number of containers: {len(min_container_combos)}")
 
 
+# pylint: disable=dangerous-default-value
 def subset_sum(numbers: list, target: int, partial=[], results=[]):
     """Determine all combinations of list items that add up to the target.
     

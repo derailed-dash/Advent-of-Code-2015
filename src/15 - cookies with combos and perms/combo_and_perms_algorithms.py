@@ -1,4 +1,5 @@
-"""Find all combinations of two digits that sum to TARGET
+"""
+Find all combinations of two digits that sum to TARGET
 Vary the RANGE_SIZE and TERMS to see impact on efficiency
 """
 from itertools import combinations_with_replacement, permutations, combinations, product
@@ -58,26 +59,32 @@ def recursive_sub_sum(terms, target):
             for value in recursive_sub_sum(terms - 1, target - i):
                 yield [i] + value
 
-functions_list = []
-functions_list.append(tuple([use_combos]))
-functions_list.append(tuple([use_product]))
-functions_list.append(tuple([use_perms]))
-functions_list.append(tuple([use_combos_with_replacement]))
-functions_list.append(tuple([use_perms_of_combos, use_combos_with_replacement]))
 
-for func in functions_list:
+def main():
+    functions_list = []
+    functions_list.append(tuple([use_combos]))
+    functions_list.append(tuple([use_product]))
+    functions_list.append(tuple([use_perms]))
+    functions_list.append(tuple([use_combos_with_replacement]))
+    functions_list.append(tuple([use_perms_of_combos, use_combos_with_replacement]))
+
+    for func in functions_list:
+        t1 = time.perf_counter()
+        if len(func) == 2:
+            # the 2nd item is a function.  The functions all return data in element [1]
+            result = func[0](func[1]()[1])
+        else:
+            result = func[0]()
+        # print(f"{result[0]}: {result[1]}")
+        t2 = time.perf_counter()
+        print(f"Execution time for {result[0]}: {t2 - t1:0.4f} seconds, with {len(result[1])} items")
+
     t1 = time.perf_counter()
-    if len(func) == 2:
-        # the 2nd item is a function.  The functions all return data in element [1]
-        result = func[0](func[1]()[1])
-    else:
-        result = func[0]()
-    # print(f"{result[0]}: {result[1]}")
+    recursive_perms = list(recursive_sub_sum(TERMS, TARGET))
+    # print(recursive_perms)
     t2 = time.perf_counter()
-    print(f"Execution time for {result[0]}: {t2 - t1:0.4f} seconds, with {len(result[1])} items")
+    print(f"Execution time for recusive_perms: {t2 - t1:0.4f} seconds, with {len(recursive_perms)} items")
 
-t1 = time.perf_counter()
-recursive_perms = list(recursive_sub_sum(TERMS, TARGET))
-# print(recursive_perms)
-t2 = time.perf_counter()
-print(f"Execution time for recusive_perms: {t2 - t1:0.4f} seconds, with {len(recursive_perms)} items")
+
+if __name__ == "__main__":
+    main()

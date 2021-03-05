@@ -45,18 +45,33 @@ def main():
 
 # pylint: disable=dangerous-default-value
 def subset_sum(numbers: list, target: int, partial=[], results=[]):
-    """Determine all combinations of list items that add up to the target.
-    
-    Args:
-        numbers (list): A list of values
-        target (int): The total that the values need to add up to
-        partial (list, optional): Used by the function. Defaults to [].
-        results (list, optional): Used by the function. Defaults to [].
+    """
+    Determine all combinations of list items that add up to the target
 
-    Returns:
-        [list]: The list of valid combinations
+    :param numbers: A list of values
+    :type numbers: list
+    :param target: The total that the values need to add up to
+    :type target: int
+    :param partial: Used by the function, defaults to []
+    :type partial: list, optional
+    :param results: Used by the function, defaults to []
+    :type results: list, optional
+    :return: The list of valid combinations
+    :rtype: list
     """
     s = sum(partial)
+
+    # Determine all combinations of list items that add up to the target.
+    
+    # Args:
+    #     numbers (list): A list of values
+    #     target (int): The total that the values need to add up to
+    #     partial (list, optional): Used by the function. Defaults to [].
+    #     results (list, optional): Used by the function. Defaults to [].
+
+    # Returns:
+    #     [list]: The list of valid combinations
+
 
     # check if the partial sum is equals to target, and if so
     # add the current terms to the results list

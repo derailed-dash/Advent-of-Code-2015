@@ -14,7 +14,7 @@ Part 1:
 Part 2:
 
 """
-import sys
+from __future__ import absolute_import
 import os
 import time
 import re

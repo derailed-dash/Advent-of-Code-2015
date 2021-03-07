@@ -29,7 +29,7 @@ Part 2:
     Filter cookies list where calories == 500.
     Repeat approach to get cookie with highest score, from this new subset.
 """
-import sys
+from __future__ import absolute_import
 import os
 import time
 from itertools import permutations, combinations_with_replacement
@@ -121,7 +121,7 @@ def main():
             if value < 0:
                 prop_scores[prop] = 0
     
-        total_score = prod(prop_scores.values())
+        total_score = prod(list(prop_scores.values()))
         cookies.append(Cookie(perm, total_score, calories))
     
     print(f"A total of {len(cookies)} cookie recipes.")
@@ -143,7 +143,7 @@ def get_cookie_score(cookie: Cookie) -> int:
     return cookie.get_score()
 
 
-def find_permutations(target: int, terms: int) -> list: 
+def find_permutations(target: int, terms: int) -> set: 
     """Return all permutations of terms that sum to the target numberself.
     We need to include repeats (e.g. 5, 5 would be valid), so we could use cartesian product with repeats.
     But finding combinations_with_replacement is much quicker and returns a much smaller set.

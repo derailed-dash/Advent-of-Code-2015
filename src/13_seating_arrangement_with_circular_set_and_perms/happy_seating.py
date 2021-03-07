@@ -31,7 +31,7 @@ Part 2:
     Add me to the set.
     Repeat Part 1.
 """
-import sys
+from __future__ import absolute_import
 import os
 import time
 import re
@@ -95,9 +95,6 @@ def main():
     optimum_happiness_seating = max(happiness_for_seating.items(), key=itemgetter(1))[0]
     print("\nPart 1")
     print(f"Optimum happiness = {happiness_for_seating[optimum_happiness_seating]} with seating: {optimum_happiness_seating}")
-
-
-    pass
 
 
 def add_me_to_happiness_by_person(happiness_by_person: dict, people):

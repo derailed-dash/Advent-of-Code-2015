@@ -44,7 +44,7 @@ def main():
 
 
 # pylint: disable=dangerous-default-value
-def subset_sum(numbers: list, target: int, partial=[], results=[]):
+def subset_sum(numbers: list, target: int, partial=[], results=[]) -> list:
     """
     Determine all combinations of list items that add up to the target
 
@@ -80,7 +80,7 @@ def subset_sum(numbers: list, target: int, partial=[], results=[]):
     # if the partial sum equals or exceed the target, 
     # no point in recursing through remaining terms.
     if s >= target:
-        return
+        return []
 
     for i, n in enumerate(numbers):
         remaining_numbers = numbers[i + 1:]

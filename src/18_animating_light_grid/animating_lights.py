@@ -112,7 +112,10 @@ def main():
     print(f"After {ITERATIONS}, there are {len(final_on_lights)} turned on.")
 
 
-def process_iterations(all_lights: Set[Tuple[int, int]], on_lights: Set[Tuple[int, int]], iterations: int) -> Set[Tuple[int, int]]:
+def process_iterations(all_lights: Set[Tuple[int, int]], 
+                       on_lights: Set[Tuple[int, int]], 
+                       iterations: int) -> Set[Tuple[int, int]]:
+                       
     for _ in range(iterations):
         on_lights_to_remove = set()
         on_lights_to_add = set()

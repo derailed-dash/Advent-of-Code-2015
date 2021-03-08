@@ -1,8 +1,8 @@
 """ 
 Author: Darren
-Date: 01/02/2021
+Date: 08/03/2021
 
-Solving https://adventofcode.com/2015/day/10
+Solving https://adventofcode.com/2015/day/18
 
 // Overview
 
@@ -17,15 +17,14 @@ Part 2:
 from __future__ import absolute_import
 import os
 import time
-import re
 
 SCRIPT_DIR = os.path.dirname(__file__) 
 INPUT_FILE = "input/input.txt"
 SAMPLE_INPUT_FILE = "input/sample_input.txt"
 
 def main():
-    # input_file = os.path.join(SCRIPT_DIR, SAMPLE_INPUT_FILE)
-    input_file = os.path.join(SCRIPT_DIR, INPUT_FILE)
+    input_file = os.path.join(SCRIPT_DIR, SAMPLE_INPUT_FILE)
+    # input_file = os.path.join(SCRIPT_DIR, INPUT_FILE)
     with open(input_file, mode="rt") as f:
         data = f.read().splitlines()
 

@@ -25,11 +25,10 @@ Part 2:
     Calculate total brightness.
 
 """
-import sys
+from __future__ import absolute_import
 import os
 import time
 import re
-from collections import defaultdict
 
 SCRIPT_DIR = os.path.dirname(__file__) 
 INPUT_FILE = "input/input.txt"

@@ -18,7 +18,9 @@ Part 1:
 
 Part 2:
     As before, but treat corner lights as always on.
-
+    Create a set that contains just the corners.  
+    Union with this set at the beginning of every iteration.
+    When processing each iteration, ignore rules for corners.
 """
 from __future__ import absolute_import
 from typing import Dict, List, Set, Tuple
@@ -103,37 +105,85 @@ def main():
         data = f.read().splitlines()
 
     # Get all light coordinates by obtaining cartesian product of all x coords with all y coords
-    all_lights = set(product(range(len(data[0])), range(len(data))))
+    lights_length = len(data[0])
+    lights_height = len(data)
     
+    all_lights = set(product(range(lights_length), range(lights_height)))
     on_lights = init_state(data)
-    
+    corner_lights = get_corners(lights_length, lights_height)
+
     # Part 1
-    final_on_lights = process_iterations(all_lights, on_lights, ITERATIONS)
-    print(f"After {ITERATIONS}, there are {len(final_on_lights)} turned on.")
+    final_on_lights = process_iterations(all_lights, on_lights.copy(), ITERATIONS)
+    print(f"Part 1, after {ITERATIONS} iterations, there are {len(final_on_lights)} turned on.")
+
+    # Part 2
+    final_on_lights = process_iterations(all_lights, on_lights.copy(), ITERATIONS, corner_lights)
+    print(f"Part 2, after {ITERATIONS} iterations, there are {len(final_on_lights)} turned on.")
+
+
+def get_corners(lights_length: int, lights_height: int) -> Set[Tuple[int, int]]:
+    """ 
+    Gets the coordinates of the four corners, given an x size and y size
+
+    Args:
+        lights_length (int): x size
+        lights_height (int): y size
+
+    Returns:
+        Set[Tuple[int, int]]: A set of four (x, y) coords
+    """
+
+    on_lights_to_add = set()
+
+    on_lights_to_add.add((0, 0))
+    on_lights_to_add.add((lights_length-1, 0))
+    on_lights_to_add.add((0, lights_height-1))
+    on_lights_to_add.add((lights_length-1, lights_height-1))
+
+    return on_lights_to_add
 
 
 def process_iterations(all_lights: Set[Tuple[int, int]], 
                        on_lights: Set[Tuple[int, int]], 
-                       iterations: int) -> Set[Tuple[int, int]]:
-                       
+                       iterations: int,
+                       fixed_lights: Set[Tuple[int, int]] = set()) -> Set[Tuple[int, int]]:
+    """ 
+    Carry out Conway-like rules for all lights in the all_lights set.
+
+    Args:
+        all_lights (Set[Tuple[int, int]]): A set of all coords, in an array of width x and height y
+        on_lights (Set[Tuple[int, int]]): A set containing only coords of lights that are on
+        iterations (int): The number of iterations to process the Conway-like rules
+        fixed_lights (Set[Tuple[int, int]], optional): Coords of lights that will always be on. Defaults to empty set().
+
+    Returns:
+        Set[Tuple[int, int]]: The coords of lights that are 'on', following specified iterations
+    """
+
     for _ in range(iterations):
         on_lights_to_remove = set()
         on_lights_to_add = set()
+
+        on_lights.update(fixed_lights)
         
         for light in all_lights:
             neighbours = set(Cell.get_neighbours(light))
             on_neighbours = neighbours.intersection(on_lights)
             
-            if (light in on_lights):
+            if (light in fixed_lights):
+                # do nothing
+                pass
+            elif (light in on_lights):
                 if len(on_neighbours) < 2 or len(on_neighbours) > 3:
                     on_lights_to_remove.add(light)
-
             else:
                 if (len(on_neighbours) == 3):
                     on_lights_to_add.add(light)
         
         on_lights.update(on_lights_to_add)
         on_lights.difference_update(on_lights_to_remove)
+
+        # print(f"Iteration {_+1}: {len(on_lights)}")
 
     return on_lights
     

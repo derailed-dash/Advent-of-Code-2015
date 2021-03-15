@@ -77,7 +77,8 @@ def retrosynthesis(target_groups: dict, target_molecule: str) -> list:
 
     # start by doing all the substitions, without e
     # repeat until the molecule is not modified
-    while True:
+    molecule_modified = True
+    while molecule_modified:
         molecule_modified = False
 
         for tgt_grp, src_grp in target_groups.items():
@@ -92,9 +93,6 @@ def retrosynthesis(target_groups: dict, target_molecule: str) -> list:
                 current_molecule = current_molecule.replace(tgt_grp, src_grp)
                 molecule_modified = True
                 synthesis_stack.append([substitutions, current_molecule])
-        
-        if not molecule_modified:
-            break
 
     # now replace target with e
     for tgt_grp, src_grp in target_groups.items():

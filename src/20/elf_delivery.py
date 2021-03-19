@@ -1,10 +1,17 @@
 """ 
 Author: Darren
-Date: 01/02/2021
+Date: 19/03/2021
 
-Solving https://adventofcode.com/2015/day/10
+Solving https://adventofcode.com/2015/day/20
 
-// Overview
+Infinite elves deliver to infinite houses numbered sequentially.
+Each elf is assigned a number and a progression.
+Elfx visits all houses xn. E.g.
+    elf1 visits 1, 2, 3, 4 ...
+    elf2 visits 2, 4, 6, 8 ...
+    elfx visits x, 2x, 3x, 4x ...
+
+At each house, the elf delivers 10x presents.
 
 
 Solution:

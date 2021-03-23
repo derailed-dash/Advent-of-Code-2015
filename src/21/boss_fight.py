@@ -69,12 +69,15 @@ class Player:
         """
         return ceil(other_player.get_hit_points() / self.get_attack_damage(other_player))
 
+    def will_defeat(self, other_player: Player) -> bool:
+        return self.get_attacks_needed(other_player) <= other_player.get_attacks_needed(self)
+
     def attack(self, other_player: Player):
         attack_damage = self.get_attack_damage(other_player)
         other_player.take_hit(attack_damage)
     
     def __str__(self):
-        return f"{self._name} hit points: {self._hit_points}"
+        return f"Player: {self._name}, hit points: {self._hit_points}"
 
 
 def main():
@@ -83,16 +86,17 @@ def main():
         data = f.read().splitlines()
 
     player = Player("Player", hit_points=8, damage=5, armor=5)
-    boss = Player("Boss", hit_points=13, damage=7, armor=2)
+    boss = Player("Boss", hit_points=12, damage=7, armor=2)
 
     print(player)
     print(boss)
-
     print(f"Player attack damage = {player.get_attack_damage(boss)}")
     print(f"Boss attack damage = {boss.get_attack_damage(player)}")
 
-    print(f"Player attacks needed = {player.get_attacks_needed(boss)}")
+    print(f"\nPlayer attacks needed = {player.get_attacks_needed(boss)}")
     print(f"Boss attacks needed = {boss.get_attacks_needed(player)}")
+
+    print(f"Player wins? {player.will_defeat(boss)}\n")
 
     player_wins = play_game(player, boss)
     if player_wins:
@@ -101,6 +105,7 @@ def main():
         print("We lost")
 
 def play_game(player: Player, boss: Player) -> bool:
+    print("Playing...")
     i = 1
     current_player = player
     other_player = boss

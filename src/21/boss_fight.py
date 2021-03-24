@@ -23,7 +23,8 @@ import re
 from math import ceil
 
 SCRIPT_DIR = os.path.dirname(__file__) 
-INPUT_FILE = "input/input.txt"
+BOSS_FILE = "input/boss_stats.txt"
+SHOP_FILE = "input/shop.txt"
 
 class Player:
     def __init__(self, name: str, hit_points: int, damage: int, armor: int):
@@ -77,16 +78,23 @@ class Player:
         other_player.take_hit(attack_damage)
     
     def __str__(self):
-        return f"Player: {self._name}, hit points: {self._hit_points}"
+        return f"Player: {self._name}, hit points={self._hit_points}, damage={self._damage}, armor={self._armor}"
 
 
 def main():
-    input_file = os.path.join(SCRIPT_DIR, INPUT_FILE)
-    with open(input_file, mode="rt") as f:
+    boss_file = os.path.join(SCRIPT_DIR, BOSS_FILE)
+    shop_file = os.path.join(SCRIPT_DIR, SHOP_FILE)
+    with open(boss_file, mode="rt") as f:
+        data = f.read().splitlines()
+
+    hit_points, damage, armor = process_boss_input(data)
+    boss = Player("Boss", hit_points=hit_points, damage=damage, armor=armor)
+    
+    with open(shop_file, mode="rt") as f:
         data = f.read().splitlines()
 
     player = Player("Player", hit_points=8, damage=5, armor=5)
-    boss = Player("Boss", hit_points=12, damage=7, armor=2)
+
 
     print(player)
     print(boss)
@@ -103,6 +111,23 @@ def main():
         print("We won!")
     else:
         print("We lost")
+
+
+def process_boss_input(input):
+    score_match = re.compile(r"^.*: (\d+)")
+
+    hit_points = damage = armor = 0
+    for line in input:
+        score = int(score_match.match(line).group(1))
+        if "Hit" in line:
+            hit_points = score
+        elif "Damage" in line:
+            damage = score
+        else:
+            armor = score
+    
+    return hit_points, damage, armor
+
 
 def play_game(player: Player, boss: Player) -> bool:
     print("Playing...")

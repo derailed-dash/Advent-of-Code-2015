@@ -136,9 +136,6 @@ class Outfit:
             self._damage += an_item.damage
             self._armor += an_item.armor
 
-    def __str__(self):
-        return f"Outfit: {self._item_names}, cost: {self._cost}, damage: {self._damage}, armor: {self._armor}"
-
     def __repr__(self):
         return f"Outfit: {self._item_names}, cost: {self._cost}, damage: {self._damage}, armor: {self._armor}"
     
@@ -305,7 +302,7 @@ def process_shop_items(data) -> tuple[dict, dict, dict]:
     return weapons, armor, rings
 
 
-def process_boss_input(data):
+def process_boss_input(data:list[str]):
     """ Process boss file input and return tuple of hit_points, damage and armor
 
     Args:
@@ -314,19 +311,12 @@ def process_boss_input(data):
     Returns:
         tuple: hit_points, damage, armor
     """
-    score_match = re.compile(r"^.*: (\d+)")
-
-    hit_points = damage = armor = 0
+    boss = {}
     for line in data:
-        score = int(score_match.match(line).group(1))
-        if "Hit" in line:
-            hit_points = score
-        elif "Damage" in line:
-            damage = score
-        else:
-            armor = score
-    
-    return hit_points, damage, armor
+        key, val = line.strip().split(":")
+        boss[key] = int(val)
+
+    return boss['Hit Points'], boss['Damage'], boss['Armor']
 
 
 def play_game(player: Player, boss: Player) -> bool:

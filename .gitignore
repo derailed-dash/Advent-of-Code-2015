@@ -1,6 +1,7 @@
 __pycache__
 .vscode
 .*-env/
+.env
 desktop.ini
 message.txt
 snippets/

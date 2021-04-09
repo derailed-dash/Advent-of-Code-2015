@@ -83,8 +83,8 @@ class Shop:
 
         # Our product is a tuple with always three items, which looks like (weapon, armor, [rings])
         # Where [rings] can have [None], one or two rings.  
-        # We need to expand this list, by turning each item into a list and then adding the lists, so that we end up with...
-        # [weapon, armor, ring1...]
+        # We need to expand this list, by turning each item into a list and then adding the lists, 
+        # so that we end up with... [weapon, armor, ring1...]
         for outfit_combo in all_outfits_combos:
             outfit_item_names = []
             outfit_item_names = [outfit_combo[0]] + [outfit_combo[1]] + [rings for rings in outfit_combo[2]]

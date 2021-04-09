@@ -1,8 +1,8 @@
 """ 
 Author: Darren
-Date: 01/02/2021
+Date: 09/04/2021
 
-Solving https://adventofcode.com/2015/day/10
+Solving https://adventofcode.com/2015/day/22
 
 // Overview
 
@@ -17,8 +17,7 @@ Part 2:
 from __future__ import absolute_import
 import os
 import time
-import re
-from d22.player import Player, Wizard
+from d22_wizards_factories_constants.player import Player, Wizard, SpellFactory
 
 
 SCRIPT_DIR = os.path.dirname(__file__) 
@@ -37,7 +36,8 @@ def main():
     print(boss)
 
     player = Wizard("Bob", hit_points=10, damage=0, armor=0, mana=250)
-    print(player)
+    print(f"{player}\n")
+    player.cast_spell(SpellFactory.SpellConstants.MAGIC_MISSILES, boss)
 
     # If we want to play a game and see each attack...  
     player_wins = play_game(player, boss)
@@ -57,7 +57,7 @@ def play_game(player: Player, boss: Player) -> bool:
     Returns:
         bool: Whether player wins
     """
-    print("\n*** The Game Begins ***")
+    print("*** The Game Begins ***")
     i = 1
     current_player = player
     other_player = boss

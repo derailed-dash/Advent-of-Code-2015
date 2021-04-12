@@ -17,7 +17,7 @@ Part 2:
 from __future__ import absolute_import
 import os
 import time
-from d22_wizards_factories_constants.player import Player, Wizard, SpellFactory
+from d22_wizards_factories_constants.players_and_wizards import Player, SpellType, Wizard, SpellFactory
 
 
 SCRIPT_DIR = os.path.dirname(__file__) 
@@ -30,28 +30,61 @@ def main():
     with open(boss_file, mode="rt") as f:
         data = f.read().splitlines()
     
-    hit_points, damage = process_boss_input(data)
+    # hit_points, damage = process_boss_input(data)
     # boss = Player("Boss", hit_points=hit_points, damage=damage, armor=0)
-    boss = Player("Boss Socks", hit_points=10, damage=8, armor=0)
-    print(boss)
+    # print(boss)
 
-    player = Wizard("Bob", hit_points=10, damage=0, armor=0, mana=250)
-    print(f"{player}\n")
-    player.cast_spell(SpellFactory.SpellConstants.MAGIC_MISSILES, boss)
+    # player = Wizard("Bob", hit_points=10, mana=250)
+    # print(f"{player}\n")
 
     # If we want to play a game and see each attack...  
-    player_wins = play_game(player, boss)
-    if player_wins:
-        print("\nPlayer won!")
+    test_game()
+
+
+def test_game():
+    player = Wizard("Bob", hit_points=10, mana=250)
+    print(f"{player}")
+    boss = Player("Boss Socks", hit_points=14, damage=8, armor=0)
+    print(boss)
+
+    i = 1
+    current_player = player
+    other_player = boss    
+    attacks = [
+        SpellFactory.SpellConstants.RECHARGE,
+        SpellFactory.SpellConstants.SHIELD,
+        SpellFactory.SpellConstants.DRAIN,
+        SpellFactory.SpellConstants.POISON, 
+        SpellFactory.SpellConstants.MAGIC_MISSILES,
+    ]
+    while (player.get_hit_points() > 0 and boss.get_hit_points() > 0):
+        if current_player == player:
+            # player (wizard) attack
+            print(f"\nRound {i}...")
+
+            player.cast_spell(attacks[i-1], boss)
+            player.apply_effects(boss)
+        else:
+            i += 1
+            boss.attack(other_player)
+            player.apply_effects(boss)
+        
+        print(f"End of turn: {player}")
+        print(f"End of turn: {boss}")
+
+        # swap players
+        current_player, other_player = other_player, current_player
+
+    if player.get_hit_points() > 0:
+        print("Player won!")
     else:
-        print("\nBoss won. :(")
+        print("Boss won. :(")
 
-
-def play_game(player: Player, boss: Player) -> bool:
+def play_game(player: Wizard, boss: Player) -> bool:
     """Performs a game, given two players. Determines if player1 wins, vs bloss.
 
     Args:
-        player (Player): The player
+        player (Wizard): The player
         boss (Player): The boss
 
     Returns:
@@ -69,7 +102,6 @@ def play_game(player: Player, boss: Player) -> bool:
 
         current_player.attack(other_player)
         print(f"Result = {other_player}")
-
 
         current_player, other_player = other_player, current_player
     

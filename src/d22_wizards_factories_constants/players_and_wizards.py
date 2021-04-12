@@ -112,7 +112,20 @@ class SpellFactory:
     }
 
     @classmethod
-    def is_spell_castable(cls, spell_type: str, wiz: Wizard):
+    def is_spell_castable(cls, spell_type: str, wiz: Wizard) -> bool:
+        """ Determine if this Wizard can cast this spell.
+        Spell can only be cast if the wizard has sufficient mana, and if the spell is not already active.
+
+        Args:
+            spell_type (str): Spell constant
+            wiz (Wizard): A Wizard
+
+        Raises:
+            KeyError: If the spell does not exist
+
+        Returns:
+            [bool]: True if castable
+        """
         if spell_type not in SpellFactory.spell_types.keys():
             raise KeyError
         
@@ -164,9 +177,11 @@ class Spell:
         self._damage = spell_type.damage
         self._armor = spell_type.armor
         self._mana_regen = spell_type.mana_regen
+        self._effect_applied_count = 0
 
     def __repr__(self) -> str:
-        return f"Spell: {self._name}, is effect: {self._is_effect}, remaining duration: {self._duration}"
+        return f"Spell: {self._name}, cost: {self._mana_cost}, " \
+                    f"is effect: {self._is_effect}, remaining duration: {self._duration}"
 
     def is_effect(self):
         return self._is_effect
@@ -189,16 +204,36 @@ class Spell:
     def get_mana_regen(self):
         return self._mana_regen 
 
+    def get_effect_applied_count(self):
+        return self._effect_applied_count
+
+    def increment_effect_applied_count(self):
+        self._effect_applied_count += 1
+
 
 class Wizard(Player):
     """ Extends Player.
     Also has attribute 'mana', which powers spells.
     Wizard has no armor (except when provided by spells) and no inherent damage (except from spells).
+
+    For each wizard turn, we must cast_spell() and apply_effects().
+    On each opponent's turn, we must apply_effects().
     """
-    def __init__(self, name: str, hit_points: int, damage: int, armor: int, mana: int):
+    def __init__(self, name: str, hit_points: int, mana: int, damage: int = 0, armor: int = 0):
+        """ Wizards have 0 mundane armor or damage.
+
+        Args:
+            name (str): Wizard name
+            hit_points (int): Total life.
+            mana (int): Used to power spells.
+            damage (int, optional): mundane damage. Defaults to 0.
+            armor (int, optional): mundane armor. Defaults to 0.
+        """
         super().__init__(name, hit_points, damage, armor)
         self._mana = mana
-        self._active_effects = {}
+
+        # store currently active effects, where key = spell constant, and value = spell
+        self._active_effects: dict[str, Spell] = {}
 
     def get_mana(self):
         return self._mana
@@ -217,23 +252,73 @@ class Wizard(Player):
         """
         spell = SpellFactory.create_spell(spell_key)
         self._mana -= spell.get_mana_cost()
+        print(f"{self._name} casted {spell}")
 
         if spell.is_effect():
+            # add to active effects, apply later
             self._active_effects[spell_key] = spell
         else:
+            # apply now.
+            # opponent's armor counts for nothing against a magical attack
             attack_damage = spell.get_damage()
-            #self._hit_points += spell.get
+            if attack_damage:
+                print(f"{self._name} attack. Inflicting damage: {attack_damage}.")
+                other_player.take_hit(attack_damage)
+
+            heal = spell.get_heal()
+            if heal:
+                print(f"{self._name} healing by {heal}.") 
+                self._hit_points += heal                        
             
-
     def apply_effects(self, other_player: Player):
-        pass
+        """ Apply effects in the active_effects dict.
+
+        Args:
+            other_player (Player): The opponent
+        """
+        effects_to_remove = []
+
+        for effect_name, effect in self._active_effects.items():
+            # if effect should be active if we've used it fewer times than the duration * 2
+            # (remember that it should apply once for the wizard's turn, and again for the opponent's turn)
+            if effect.get_effect_applied_count() < (effect.get_duration() * 2):
+                print(f"{self._name}: applying effect {effect_name}")
+
+                if effect.get_armor():
+                    if effect.get_effect_applied_count() == 0:
+                        # increment armor on first use, and persist this level until the effect fades
+                        self._armor += effect.get_armor()
+
+                if effect.get_damage():
+                    other_player.take_hit(effect.get_damage())
+                
+                if effect.get_mana_regen():
+                    self._mana += effect.get_mana_regen()
+
+            # end effect; reverse any persisted effects
+            else:
+                print(f"{self._name}: fading effect {effect_name}")
+                if effect.get_armor():
+                    # restore armor to pre-effect levels
+                    self._armor -= effect.get_armor()
+
+                # Now we've faded the effect, flag it for removal
+                effects_to_remove.append(effect_name)
+        
+            effect.increment_effect_applied_count()
+
+        # now remove any effects flagged for removal
+        for effect_name in effects_to_remove:
+            print(f"Removing {effect_name}.")
+            self._active_effects.pop(effect_name)
 
 
-    # TODO: Need to get replace this
     def attack(self, other_player: Player):
-        attack_damage = self.get_attack_damage(other_player)
-        print(f"{self._name} attack. Inflicting damage: {attack_damage}.")
-        other_player.take_hit(attack_damage)
+        """ A Wizard cannot perform a mundane attack.
+        Use cast_spell() instead.
+        """
+        raise NotImplementedError("Wizards cast spells")
+
 
     def __repr__(self):
         return f"{self._name} (Wizard): hit points={self._hit_points}, " \

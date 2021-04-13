@@ -85,6 +85,7 @@ class SpellType:
     armor: int = 0
     heal: int = 0
     mana_regen: int = 0
+    delay_start: int = 0
 
 class SpellFactory:
     """ For creating instances of Spell. Use the create_spell() method.
@@ -99,7 +100,7 @@ class SpellFactory:
         """ Spell Constants """
         MAGIC_MISSILES = 'magic_missiles'
         DRAIN = 'drain'
-        SHIELD = 'sheild'
+        SHIELD = 'shield'
         POISON = 'poison'
         RECHARGE = 'recharge'
 
@@ -107,8 +108,8 @@ class SpellFactory:
         SpellConstants.MAGIC_MISSILES: SpellType('MAGIC_MISSILES', mana_cost=53, duration=0, is_effect=False, damage=4),
         SpellConstants.DRAIN: SpellType('DRAIN', mana_cost=73, duration=0, is_effect=False, damage=2, heal=2),
         SpellConstants.SHIELD: SpellType('SHIELD', mana_cost=113, duration=6, is_effect=True, armor=7),
-        SpellConstants.POISON: SpellType('POISON', mana_cost=173, duration=6, is_effect=True, damage=3),
-        SpellConstants.RECHARGE: SpellType('RECHARGE', mana_cost=229, duration=5, is_effect=True, mana_regen=101)
+        SpellConstants.POISON: SpellType('POISON', mana_cost=173, duration=6, is_effect=True, damage=3, delay_start=1),
+        SpellConstants.RECHARGE: SpellType('RECHARGE', mana_cost=229, duration=5, is_effect=True, mana_regen=101, delay_start=1)
     }
 
     @classmethod
@@ -177,6 +178,7 @@ class Spell:
         self._damage = spell_type.damage
         self._armor = spell_type.armor
         self._mana_regen = spell_type.mana_regen
+        self._delay_start = spell_type.delay_start
         self._effect_applied_count = 0
 
     def __repr__(self) -> str:
@@ -203,6 +205,12 @@ class Spell:
 
     def get_mana_regen(self):
         return self._mana_regen 
+    
+    def get_delay_start(self):
+        return self._delay_start
+
+    def decrement_delay_start(self):
+        self._delay_start -= 1
 
     def get_effect_applied_count(self):
         return self._effect_applied_count
@@ -282,18 +290,22 @@ class Wizard(Player):
             # if effect should be active if we've used it fewer times than the duration * 2
             # (remember that it should apply once for the wizard's turn, and again for the opponent's turn)
             if effect.get_effect_applied_count() < (effect.get_duration() * 2):
-                print(f"{self._name}: applying effect {effect_name}")
+                if effect.get_delay_start() > 0:
+                    print(f"{self._name}: effect {effect_name} starts on next turn.")
+                    effect.decrement_delay_start()
+                else:
+                    print(f"{self._name}: applying effect {effect_name}, leaving {effect.get_duration()} turns.")
 
-                if effect.get_armor():
-                    if effect.get_effect_applied_count() == 0:
-                        # increment armor on first use, and persist this level until the effect fades
-                        self._armor += effect.get_armor()
+                    if effect.get_armor():
+                        if effect.get_effect_applied_count() == 0:
+                            # increment armor on first use, and persist this level until the effect fades
+                            self._armor += effect.get_armor()
 
-                if effect.get_damage():
-                    other_player.take_hit(effect.get_damage())
-                
-                if effect.get_mana_regen():
-                    self._mana += effect.get_mana_regen()
+                    if effect.get_damage():
+                        other_player.take_hit(effect.get_damage())
+                    
+                    if effect.get_mana_regen():
+                        self._mana += effect.get_mana_regen()
 
             # end effect; reverse any persisted effects
             else:

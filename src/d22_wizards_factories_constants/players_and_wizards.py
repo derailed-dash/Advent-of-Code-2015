@@ -107,7 +107,8 @@ class SpellFactory:
     spell_types = {
         SpellConstants.MAGIC_MISSILES: SpellType('MAGIC_MISSILES', mana_cost=53, duration=0, is_effect=False, damage=4),
         SpellConstants.DRAIN: SpellType('DRAIN', mana_cost=73, duration=0, is_effect=False, damage=2, heal=2),
-        SpellConstants.SHIELD: SpellType('SHIELD', mana_cost=113, duration=6, is_effect=True, armor=7),
+        # Shield applies on the turn it is cast, so increase duration by 1 to account for this
+        SpellConstants.SHIELD: SpellType('SHIELD', mana_cost=113, duration=7, is_effect=True, armor=7),
         SpellConstants.POISON: SpellType('POISON', mana_cost=173, duration=6, is_effect=True, damage=3, delay_start=1),
         SpellConstants.RECHARGE: SpellType('RECHARGE', mana_cost=229, duration=5, is_effect=True, mana_regen=101, delay_start=1)
     }
@@ -287,17 +288,19 @@ class Wizard(Player):
         effects_to_remove = []
 
         for effect_name, effect in self._active_effects.items():
-            # if effect should be active if we've used it fewer times than the duration * 2
-            # (remember that it should apply once for the wizard's turn, and again for the opponent's turn)
-            if effect.get_effect_applied_count() < (effect.get_duration() * 2):
+            # if effect should be active if we've used it fewer times than the duration
+            if effect.get_effect_applied_count() < effect.get_duration():
+                # some spell effects to not apply on the turn the spell is cast
                 if effect.get_delay_start() > 0:
                     print(f"{self._name}: effect {effect_name} starts on next turn.")
                     effect.decrement_delay_start()
                 else:
-                    print(f"{self._name}: applying effect {effect_name}, leaving {effect.get_duration()} turns.")
+                    effect.increment_effect_applied_count()
+                    print(f"{self._name}: applying effect {effect_name}, " \
+                            f"leaving {effect.get_duration() - effect.get_effect_applied_count()} turns.")
 
                     if effect.get_armor():
-                        if effect.get_effect_applied_count() == 0:
+                        if effect.get_effect_applied_count() == 1:
                             # increment armor on first use, and persist this level until the effect fades
                             self._armor += effect.get_armor()
 
@@ -317,8 +320,6 @@ class Wizard(Player):
                 # Now we've faded the effect, flag it for removal
                 effects_to_remove.append(effect_name)
         
-            effect.increment_effect_applied_count()
-
         # now remove any effects flagged for removal
         for effect_name in effects_to_remove:
             print(f"Removing {effect_name}.")

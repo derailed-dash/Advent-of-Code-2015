@@ -66,8 +66,14 @@ def test_game():
             player.apply_effects(boss)
         else:
             i += 1
-            boss.attack(other_player)
+
+            # effects apply before opponent attacks
             player.apply_effects(boss)
+            if boss.get_hit_points() <= 0:
+                continue
+
+            boss.attack(other_player)
+
         
         print(f"End of turn: {player}")
         print(f"End of turn: {boss}")

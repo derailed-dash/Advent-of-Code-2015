@@ -107,14 +107,13 @@ class SpellFactory:
     spell_types = {
         SpellConstants.MAGIC_MISSILES: SpellType('MAGIC_MISSILES', mana_cost=53, duration=0, is_effect=False, damage=4),
         SpellConstants.DRAIN: SpellType('DRAIN', mana_cost=73, duration=0, is_effect=False, damage=2, heal=2),
-        # Shield applies on the turn it is cast, so increase duration by 1 to account for this
-        SpellConstants.SHIELD: SpellType('SHIELD', mana_cost=113, duration=7, is_effect=True, armor=7),
-        SpellConstants.POISON: SpellType('POISON', mana_cost=173, duration=6, is_effect=True, damage=3, delay_start=1),
-        SpellConstants.RECHARGE: SpellType('RECHARGE', mana_cost=229, duration=5, is_effect=True, mana_regen=101, delay_start=1)
+        SpellConstants.SHIELD: SpellType('SHIELD', mana_cost=113, duration=6, is_effect=True, armor=7),
+        SpellConstants.POISON: SpellType('POISON', mana_cost=173, duration=6, is_effect=True, damage=3),
+        SpellConstants.RECHARGE: SpellType('RECHARGE', mana_cost=229, duration=5, is_effect=True, mana_regen=101)
     }
 
     @classmethod
-    def is_spell_castable(cls, spell_type: str, wiz: Wizard) -> bool:
+    def check_spell_castable(cls, spell_type: str, wiz: Wizard):
         """ Determine if this Wizard can cast this spell.
         Spell can only be cast if the wizard has sufficient mana, and if the spell is not already active.
 
@@ -123,25 +122,28 @@ class SpellFactory:
             wiz (Wizard): A Wizard
 
         Raises:
-            KeyError: If the spell does not exist
+            KeyError: If the spell_type does not exist
+            ValueError: If the spell is not castable
 
         Returns:
             [bool]: True if castable
         """
         if spell_type not in SpellFactory.spell_types.keys():
-            raise KeyError
+            raise ValueError(f"{spell_type} does not exist.")
         
         spell_attribs = SpellFactory.spell_types[spell_type]
 
         # not enough mana
         if wiz.get_mana() < spell_attribs.mana_cost:
-            return False
+            raise ValueError(f"Not enough mana for {spell_type}. Need {spell_attribs.mana_cost}, have {wiz.get_mana()}.")
 
         # spell already active
         if spell_type in wiz.get_active_effects():
-            return False
+            spell = wiz.get_active_effects()[spell_type]
+            turns_left = spell.get_duration() - spell.get_effect_applied_count()
 
-        return True
+            if turns_left > 1:
+                raise ValueError(f"Spell {spell_type} already active, with {turns_left} turns remaining.")
     
     @classmethod
     def create_spell(cls, spell_type: str):
@@ -179,8 +181,11 @@ class Spell:
         self._damage = spell_type.damage
         self._armor = spell_type.armor
         self._mana_regen = spell_type.mana_regen
-        self._delay_start = spell_type.delay_start
         self._effect_applied_count = 0
+
+        # effects apply on the turn after they are cast
+        if self._is_effect:
+            self._delay_start = 1
 
     def __repr__(self) -> str:
         return f"Spell: {self._name}, cost: {self._mana_cost}, " \
@@ -247,8 +252,23 @@ class Wizard(Player):
     def get_mana(self):
         return self._mana
 
+    def use_mana(self, mana_used: int):
+        if mana_used > self._mana:
+            raise ValueError("Not enough mana!")
+        
+        self._mana -= mana_used
+
     def get_active_effects(self):
-        return self._active_effects.keys()
+        return self._active_effects
+
+    def take_turn(self, spell_key: str, other_player: Player):
+        self.cast_spell(spell_key, other_player)
+        self.apply_effects(other_player)
+        self.fade_effects()
+
+    def opponent_takes_turn(self, other_player: Player):
+        self.apply_effects(other_player)
+        self.fade_effects()        
 
     def cast_spell(self, spell_key: str, other_player: Player):
         """ Casts a spell.
@@ -259,12 +279,19 @@ class Wizard(Player):
             spell_key (str): a SpellType constant.
             other_player (Player): The other player
         """
+        SpellFactory.check_spell_castable(spell_key, self)
+
         spell = SpellFactory.create_spell(spell_key)
-        self._mana -= spell.get_mana_cost()
+        try:
+            self.use_mana(spell.get_mana_cost())
+        except ValueError as err:
+            raise ValueError(f"Unable to cast {spell_key}: Not enough mana! Needed {spell.get_mana_cost()}; have {self._mana}.") from err
+
         print(f"{self._name} casted {spell}")
 
         if spell.is_effect():
             # add to active effects, apply later
+            # this might replace a fading effect
             self._active_effects[spell_key] = spell
         else:
             # apply now.
@@ -276,21 +303,35 @@ class Wizard(Player):
 
             heal = spell.get_heal()
             if heal:
-                print(f"{self._name} healing by {heal}.") 
+                print(f"{self._name}: healing by {heal}.") 
                 self._hit_points += heal                        
             
+    def fade_effects(self):
+        effects_to_remove = []
+        for effect_name, effect in self._active_effects.items():
+            if effect.get_effect_applied_count() >= effect.get_duration():
+                print(f"{self._name}: fading effect {effect_name}")
+                if effect.get_armor():
+                    # restore armor to pre-effect levels
+                    self._armor -= effect.get_armor()
+
+                # Now we've faded the effect, flag it for removal
+                effects_to_remove.append(effect_name)
+        
+        # now remove any effects flagged for removal
+        for effect_name in effects_to_remove:
+            self._active_effects.pop(effect_name)        
+
     def apply_effects(self, other_player: Player):
         """ Apply effects in the active_effects dict.
 
         Args:
             other_player (Player): The opponent
         """
-        effects_to_remove = []
-
         for effect_name, effect in self._active_effects.items():
             # if effect should be active if we've used it fewer times than the duration
             if effect.get_effect_applied_count() < effect.get_duration():
-                # some spell effects to not apply on the turn the spell is cast
+                # effects apply on the turn after they are cast (i.e. start on the opponent's turn)
                 if effect.get_delay_start() > 0:
                     print(f"{self._name}: effect {effect_name} starts on next turn.")
                     effect.decrement_delay_start()
@@ -309,23 +350,7 @@ class Wizard(Player):
                     
                     if effect.get_mana_regen():
                         self._mana += effect.get_mana_regen()
-
-            # end effect; reverse any persisted effects
-            else:
-                print(f"{self._name}: fading effect {effect_name}")
-                if effect.get_armor():
-                    # restore armor to pre-effect levels
-                    self._armor -= effect.get_armor()
-
-                # Now we've faded the effect, flag it for removal
-                effects_to_remove.append(effect_name)
         
-        # now remove any effects flagged for removal
-        for effect_name in effects_to_remove:
-            print(f"Removing {effect_name}.")
-            self._active_effects.pop(effect_name)
-
-
     def attack(self, other_player: Player):
         """ A Wizard cannot perform a mundane attack.
         Use cast_spell() instead.

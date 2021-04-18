@@ -17,7 +17,7 @@ Part 2:
 from __future__ import absolute_import
 import os
 import time
-from d22_wizards_factories_constants.players_and_wizards import Player, SpellType, Wizard, SpellFactory
+from d22_wizards_factories_constants.players_and_wizards import Player, Wizard, SpellFactory
 
 
 SCRIPT_DIR = os.path.dirname(__file__) 
@@ -37,44 +37,97 @@ def main():
     # player = Wizard("Bob", hit_points=10, mana=250)
     # print(f"{player}\n")
 
-    # If we want to play a game and see each attack...  
-    test_game()
-
+    # run some tests
+    # test_game()
+    test_not_enough_mana()
+    test_spell_already_active()
 
 def test_game():
+    print("\nTEST GAME")
+    
     player = Wizard("Bob", hit_points=10, mana=250)
     print(f"{player}")
     boss = Player("Boss Socks", hit_points=14, damage=8, armor=0)
     print(boss)
-
-    i = 1
-    current_player = player
-    other_player = boss    
-    attacks = [
+    
+    test_attacks = [
         SpellFactory.SpellConstants.RECHARGE,
         SpellFactory.SpellConstants.SHIELD,
         SpellFactory.SpellConstants.DRAIN,
         SpellFactory.SpellConstants.POISON, 
         SpellFactory.SpellConstants.MAGIC_MISSILES,
     ]
+    
+    try:
+        play_game(test_attacks, player, boss)
+    except ValueError as err:
+        print(err)   
+
+def test_not_enough_mana():
+    print("\nTEST NOT ENOUGH MANA")   
+
+    player = Wizard("Bob", hit_points=10, mana=250)
+    print(f"{player}")
+    boss = Player("Boss Socks", hit_points=14, damage=8, armor=0)
+    print(boss)
+ 
+    test_attacks = [
+        SpellFactory.SpellConstants.RECHARGE,
+        SpellFactory.SpellConstants.POISON, 
+        SpellFactory.SpellConstants.SHIELD,
+        SpellFactory.SpellConstants.DRAIN,
+        SpellFactory.SpellConstants.MAGIC_MISSILES,
+    ]
+    try:
+        play_game(test_attacks, player, boss)
+    except ValueError as err:
+        print(err)    
+
+def test_spell_already_active():
+    print("\nTEST SPELL ALREADY ACTIVE")
+
+    player = Wizard("Bob", hit_points=10, mana=250)
+    print(f"{player}")
+    boss = Player("Boss Socks", hit_points=14, damage=8, armor=0)
+    print(boss)
+
+    test_attacks = [
+        SpellFactory.SpellConstants.RECHARGE,
+        SpellFactory.SpellConstants.SHIELD,
+        SpellFactory.SpellConstants.DRAIN,
+        SpellFactory.SpellConstants.SHIELD,
+        SpellFactory.SpellConstants.RECHARGE,
+        SpellFactory.SpellConstants.MAGIC_MISSILES,
+    ]
+    try:
+        play_game(test_attacks, player, boss)
+    except ValueError as err:
+        print(err)   
+
+def play_game(attacks: list, player: Wizard, boss: Player):
+    i = 1
+    current_player = player
+    other_player = boss    
+
     while (player.get_hit_points() > 0 and boss.get_hit_points() > 0):
         if current_player == player:
             # player (wizard) attack
             print(f"\nRound {i}...")
 
-            player.cast_spell(attacks[i-1], boss)
-            player.apply_effects(boss)
+            print(f"{current_player.get_name()}'s turn:")
+            player.take_turn(attacks[i-1], boss)
         else:
             i += 1
 
+            print(f"{current_player.get_name()}'s turn:")
             # effects apply before opponent attacks
-            player.apply_effects(boss)
+            player.opponent_takes_turn(boss)
             if boss.get_hit_points() <= 0:
+                print(f"Effects killed {boss.get_name()}!")
                 continue
 
             boss.attack(other_player)
 
-        
         print(f"End of turn: {player}")
         print(f"End of turn: {boss}")
 
@@ -85,33 +138,6 @@ def test_game():
         print("Player won!")
     else:
         print("Boss won. :(")
-
-def play_game(player: Wizard, boss: Player) -> bool:
-    """Performs a game, given two players. Determines if player1 wins, vs bloss.
-
-    Args:
-        player (Wizard): The player
-        boss (Player): The boss
-
-    Returns:
-        bool: Whether player wins
-    """
-    print("*** The Game Begins ***")
-    i = 1
-    current_player = player
-    other_player = boss
-    while (player.get_hit_points() > 0 and boss.get_hit_points() > 0):
-        if current_player == player:
-            print(f"Round {i}...")
-        else:
-            i += 1
-
-        current_player.attack(other_player)
-        print(f"Result = {other_player}")
-
-        current_player, other_player = other_player, current_player
-    
-    return player.is_alive()
 
 
 def process_boss_input(data:list[str]) -> tuple:

@@ -30,7 +30,7 @@ def do_tests():
         SpellFactory.SpellConstants.RECHARGE,
         SpellFactory.SpellConstants.MAGIC_MISSILES,
     ]    
-    do_test_game("nTEST: SPELL ALREADY ACTIVE", test_attacks)
+    do_test_game("TEST: SPELL ALREADY ACTIVE", test_attacks)
 
 
 def do_test_game(game_label: str, attacks: list[str]):
@@ -41,11 +41,7 @@ def do_test_game(game_label: str, attacks: list[str]):
     boss = Player("Boss Socks", hit_points=14, damage=8, armor=0)
     print(boss)
   
-    try:
-        player_won, mana_consumed = pg(attacks, player, boss)
-        print(f"\nPlayer won? {player_won}. Mana consumed: {mana_consumed}")  
-    except ValueError as err:
-        print(err)
-
+    player_won, mana_consumed, rounds_started = pg(attacks, player, boss)
+    print(f"\nPlayer won? {player_won}. Mana consumed: {mana_consumed}. Rounds started: {rounds_started}.")  
 
 do_tests()

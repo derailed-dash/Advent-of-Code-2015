@@ -135,7 +135,8 @@ class SpellFactory:
 
         # not enough mana
         if wiz.get_mana() < spell_attribs.mana_cost:
-            raise ValueError(f"Not enough mana for {spell_type}. Need {spell_attribs.mana_cost}, have {wiz.get_mana()}.")
+            raise ValueError(f"Not enough mana for {spell_type}. " \
+                                f"Need {spell_attribs.mana_cost}, have {wiz.get_mana()}.")
 
         # spell already active
         if spell_type in wiz.get_active_effects():
@@ -307,7 +308,8 @@ class Wizard(Player):
         try:
             self.use_mana(spell.get_mana_cost())
         except ValueError as err:
-            raise ValueError(f"Unable to cast {spell_key}: Not enough mana! Needed {spell.get_mana_cost()}; have {self._mana}.") from err
+            raise ValueError(f"Unable to cast {spell_key}: Not enough mana! " \
+                                f"Needed {spell.get_mana_cost()}; have {self._mana}.") from err
 
         print(f"{self._name} casted {spell}")
 
@@ -357,7 +359,7 @@ class Wizard(Player):
             if effect.get_effect_applied_count() < effect.get_duration():
                 # effects apply on the turn after they are cast (i.e. start on the opponent's turn)
                 if effect.get_delay_start() > 0:
-                    print(f"{self._name}: effect {effect_name} starts on next turn.")
+                    # print(f"{self._name}: effect {effect_name} starts on next turn.")
                     effect.decrement_delay_start()
                 else:
                     effect.increment_effect_applied_count()

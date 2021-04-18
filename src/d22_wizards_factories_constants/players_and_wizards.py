@@ -261,16 +261,35 @@ class Wizard(Player):
     def get_active_effects(self):
         return self._active_effects
 
-    def take_turn(self, spell_key: str, other_player: Player):
-        self.cast_spell(spell_key, other_player)
+    def take_turn(self, spell_key: str, other_player: Player) -> int:
+        """ This player takes a turn.
+        This means: casting a spell, applying any effects, and fading any expired effects
+
+        Args:
+            spell_key (str): The spell key, from SpellFactory.SpellConstants
+            other_player (Player): The opponent
+
+        Returns:
+            int: The mana consumed by this turn
+        """
+        mana_consumed = self.cast_spell(spell_key, other_player)
         self.apply_effects(other_player)
         self.fade_effects()
 
+        return mana_consumed
+
     def opponent_takes_turn(self, other_player: Player):
+        """ An opponent takes their turn.  (Not the wizard.)
+        We must apply any Wizard effects on their turn (and fade), before their attack.
+        This method does not include their attack.
+
+        Args:
+            other_player (Player): [description]
+        """
         self.apply_effects(other_player)
         self.fade_effects()        
 
-    def cast_spell(self, spell_key: str, other_player: Player):
+    def cast_spell(self, spell_key: str, other_player: Player) -> int:
         """ Casts a spell.
         If spell is not an effect, it applies once.
         Otherwise, it applies for the spell's duration, on both player and opponent turns.
@@ -278,6 +297,9 @@ class Wizard(Player):
         Args:
             spell_key (str): a SpellType constant.
             other_player (Player): The other player
+
+        Returns:
+            [int]: Mana consumed
         """
         SpellFactory.check_spell_castable(spell_key, self)
 
@@ -304,7 +326,9 @@ class Wizard(Player):
             heal = spell.get_heal()
             if heal:
                 print(f"{self._name}: healing by {heal}.") 
-                self._hit_points += heal                        
+                self._hit_points += heal
+
+        return spell.get_mana_cost()                        
             
     def fade_effects(self):
         effects_to_remove = []

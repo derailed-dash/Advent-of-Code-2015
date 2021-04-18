@@ -37,77 +37,22 @@ def main():
     # player = Wizard("Bob", hit_points=10, mana=250)
     # print(f"{player}\n")
 
-    # run some tests
-    # test_game()
-    test_not_enough_mana()
-    test_spell_already_active()
+def play_game(attacks: list, player: Wizard, boss: Player) -> tuple:
+    """ Play a game, given a player (Wizard) and an opponent (boss)
 
-def test_game():
-    print("\nTEST GAME")
-    
-    player = Wizard("Bob", hit_points=10, mana=250)
-    print(f"{player}")
-    boss = Player("Boss Socks", hit_points=14, damage=8, armor=0)
-    print(boss)
-    
-    test_attacks = [
-        SpellFactory.SpellConstants.RECHARGE,
-        SpellFactory.SpellConstants.SHIELD,
-        SpellFactory.SpellConstants.DRAIN,
-        SpellFactory.SpellConstants.POISON, 
-        SpellFactory.SpellConstants.MAGIC_MISSILES,
-    ]
-    
-    try:
-        play_game(test_attacks, player, boss)
-    except ValueError as err:
-        print(err)   
+    Args:
+        attacks (list[str]): List of spells to cast, from SpellFactory.SpellConstants
+        player (Wizard): A Wizard
+        boss (Player): A mundane opponent
 
-def test_not_enough_mana():
-    print("\nTEST NOT ENOUGH MANA")   
-
-    player = Wizard("Bob", hit_points=10, mana=250)
-    print(f"{player}")
-    boss = Player("Boss Socks", hit_points=14, damage=8, armor=0)
-    print(boss)
- 
-    test_attacks = [
-        SpellFactory.SpellConstants.RECHARGE,
-        SpellFactory.SpellConstants.POISON, 
-        SpellFactory.SpellConstants.SHIELD,
-        SpellFactory.SpellConstants.DRAIN,
-        SpellFactory.SpellConstants.MAGIC_MISSILES,
-    ]
-    try:
-        play_game(test_attacks, player, boss)
-    except ValueError as err:
-        print(err)    
-
-def test_spell_already_active():
-    print("\nTEST SPELL ALREADY ACTIVE")
-
-    player = Wizard("Bob", hit_points=10, mana=250)
-    print(f"{player}")
-    boss = Player("Boss Socks", hit_points=14, damage=8, armor=0)
-    print(boss)
-
-    test_attacks = [
-        SpellFactory.SpellConstants.RECHARGE,
-        SpellFactory.SpellConstants.SHIELD,
-        SpellFactory.SpellConstants.DRAIN,
-        SpellFactory.SpellConstants.SHIELD,
-        SpellFactory.SpellConstants.RECHARGE,
-        SpellFactory.SpellConstants.MAGIC_MISSILES,
-    ]
-    try:
-        play_game(test_attacks, player, boss)
-    except ValueError as err:
-        print(err)   
-
-def play_game(attacks: list, player: Wizard, boss: Player):
+    Returns:
+        bool: Whether the player won
+    """
     i = 1
     current_player = player
     other_player = boss    
+
+    mana_consumed: int = 0
 
     while (player.get_hit_points() > 0 and boss.get_hit_points() > 0):
         if current_player == player:
@@ -115,7 +60,7 @@ def play_game(attacks: list, player: Wizard, boss: Player):
             print(f"\nRound {i}...")
 
             print(f"{current_player.get_name()}'s turn:")
-            player.take_turn(attacks[i-1], boss)
+            mana_consumed += player.take_turn(attacks[i-1], boss)
         else:
             i += 1
 
@@ -134,10 +79,8 @@ def play_game(attacks: list, player: Wizard, boss: Player):
         # swap players
         current_player, other_player = other_player, current_player
 
-    if player.get_hit_points() > 0:
-        print("Player won!")
-    else:
-        print("Boss won. :(")
+    player_won = player.get_hit_points() > 0
+    return player_won, mana_consumed
 
 
 def process_boss_input(data:list[str]) -> tuple:

@@ -17,6 +17,7 @@ Part 2:
 from __future__ import absolute_import
 import os
 import time
+from typing import Iterable
 from d22_wizards_factories_constants.players_and_wizards import Player, Wizard, SpellFactory
 
 # pylint: disable=multiple-statements
@@ -44,38 +45,30 @@ def main():
         4: SpellFactory.SpellConstants.RECHARGE
     }
 
-    attack_combos_lookups = attack_combos_generator(9, spell_key_lookup)
-    count_combos = len(attack_combos_lookups)
+    attack_combos_lookups = attack_combos_generator(12, spell_key_lookup)
 
     winning_games = {}
     least_winning_mana = 10000
-    while attack_combos_lookups:
-        boss = Player("Boss", hit_points=30, damage=boss_damage, armor=0)
-        player = Wizard("Bob", hit_points=50, mana=350)
+    ignore_combo = "9999999"
+    for attack_combo_lookup in attack_combos_lookups:
+        if attack_combo_lookup.startswith(ignore_combo):
+            continue  
+        
+        boss = Player("Boss", hit_points=boss_hit_points, damage=boss_damage, armor=0)
+        player = Wizard("Bob", hit_points=50, mana=500)
     
-        print(f"\nRemaining attack combos: {len(attack_combos_lookups)}")
         print(f"Mana target: {least_winning_mana}")
-        attack_combo_lookup = attack_combos_lookups.pop()
         print(f"Current attack: {attack_combo_lookup}")
         # Convert the attack combo to a list of attacks.
         attack_combo = [spell_key_lookup[int(key)] for key in attack_combo_lookup]
-
         player_won, mana_consumed, rounds_started = play_game(attack_combo, player, boss, mana_target=least_winning_mana)
         if player_won:
             winning_games[mana_consumed] = attack_combo_lookup
             least_winning_mana = min(mana_consumed, least_winning_mana)
-        else:
-            # For losing games, remove all attack_combos with the same starting attacks. 
-            # (To remove combos aborted by exceptions.)
-            bad_combo = attack_combo_lookup[0:rounds_started]
-            bad_combos = set(filter(lambda l: l[0:rounds_started] == bad_combo, attack_combos_lookups))
-            print(f"Eliminating {len(bad_combos)} bad combos starting with {bad_combo}.")
+        
+        ignore_combo = attack_combo_lookup[0:rounds_started]
             
-            # remove bad_combos attack_combos_lookups
-            attack_combos_lookups.difference_update(bad_combos)                        
-
-    print(f"We won {len(winning_games)} out of {count_combos}.")
-
+                
 def to_base_n(number: int, base: int):
     """ Convert any integer number into a base-n string representation of that number.
     E.g. to_base_n(38, 5) = 123
@@ -95,21 +88,16 @@ def to_base_n(number: int, base: int):
     return ret_str
 
 
-def attack_combos_generator(max_attacks: int, spell_key_lookup: dict):
+def attack_combos_generator(max_attacks: int, spell_key_lookup: dict) -> Iterable[str]:
     attack_indeces = len(spell_key_lookup)
     num_attack_combos = (attack_indeces**max_attacks)
     
-    # use a set so that we can pop as we go, and use some set algebra to remove attacks we know won't work
-    attack_combos_lookups = set()
-
     # build up a list of attack_combos. E.g.
     # [0, 0, 0], [0, 0, 1], [0, 0, 2], [0, 0, 3], [0, 0, 4], [0, 1, 0], [0, 1, 1], [0, 1, 2], etc
     for i in range(num_attack_combos):
         # convert i to base-n (where n is the number of attacks we can choose from), 
         # and then pad with zeroes until we have max number of attacks
-        attack_combos_lookups.add(to_base_n(i, attack_indeces).zfill(max_attacks))
-
-    return attack_combos_lookups
+        yield to_base_n(i, attack_indeces).zfill(max_attacks)
 
 
 def play_game(attacks: list, player: Wizard, boss: Player, **kwargs) -> tuple[bool, int, int]:
@@ -142,6 +130,9 @@ def play_game(attacks: list, player: Wizard, boss: Player, **kwargs) -> tuple[bo
                     raise ValueError(f'Mana target {mana_target} exceeded; mana consumed={mana_consumed}.')
             except ValueError as err:
                 print(err)
+                return False, mana_consumed, i
+            except IndexError:
+                print("No more attacks left.")
                 return False, mana_consumed, i
 
         else:

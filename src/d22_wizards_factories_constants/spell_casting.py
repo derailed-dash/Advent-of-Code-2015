@@ -90,6 +90,7 @@ def generate_next_spell_sequence(max_attacks: int, spell_key_lookup: dict):
     while attack_combos:
         attack_combo = attack_combos.pop()
 
+        # todo
         # Convert the attack combo to a list of attacks.
         # Play the game with this list. 
         # Store winning games with mana.

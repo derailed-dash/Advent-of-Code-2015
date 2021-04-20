@@ -15,17 +15,19 @@ Part 2:
 
 """
 from __future__ import absolute_import
+import logging
 import os
 import time
 from typing import Iterable
 from d22_wizards_factories_constants.players_and_wizards import Player, Wizard, SpellFactory
 
-# pylint: disable=multiple-statements
+# pylint: disable=multiple-statements, logging-fstring-interpolation
 
 SCRIPT_DIR = os.path.dirname(__file__) 
 BOSS_FILE = "input/boss_stats.txt"
 
-LOGGING_ENABLED = False
+# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 # pylint
 def main():
@@ -57,8 +59,8 @@ def main():
         boss = Player("Boss", hit_points=boss_hit_points, damage=boss_damage, armor=0)
         player = Wizard("Bob", hit_points=50, mana=500)
     
-        print(f"Mana target: {least_winning_mana}")
-        print(f"Current attack: {attack_combo_lookup}")
+        logging.info(f"Mana target: {least_winning_mana}")
+        logging.info(f"Current attack: {attack_combo_lookup}")
         # Convert the attack combo to a list of attacks.
         attack_combo = [spell_key_lookup[int(key)] for key in attack_combo_lookup]
         player_won, mana_consumed, rounds_started = play_game(attack_combo, player, boss, mana_target=least_winning_mana)
@@ -121,9 +123,9 @@ def play_game(attacks: list, player: Wizard, boss: Player, **kwargs) -> tuple[bo
     while (player.get_hit_points() > 0 and boss.get_hit_points() > 0):
         if current_player == player:
             # player (wizard) attack
-            if LOGGING_ENABLED: print(f"\nRound {i}...")
+            logging.debug(f"\nRound {i}...")
 
-            if LOGGING_ENABLED: print(f"{current_player.get_name()}'s turn:")
+            logging.debug(f"{current_player.get_name()}'s turn:")
             try:
                 mana_consumed += player.take_turn(attacks[i-1], boss)
                 if mana_target and mana_consumed > mana_target:
@@ -136,18 +138,18 @@ def play_game(attacks: list, player: Wizard, boss: Player, **kwargs) -> tuple[bo
                 return False, mana_consumed, i
 
         else:
-            if LOGGING_ENABLED: print(f"{current_player.get_name()}'s turn:")
+            logging.debug(f"{current_player.get_name()}'s turn:")
             # effects apply before opponent attacks
             player.opponent_takes_turn(boss)
             if boss.get_hit_points() <= 0:
-                if LOGGING_ENABLED: print(f"Effects killed {boss.get_name()}!")
+                logging.debug(f"Effects killed {boss.get_name()}!")
                 continue
 
             boss.attack(other_player)
             i += 1
 
-        if LOGGING_ENABLED: print(f"End of turn: {player}")
-        if LOGGING_ENABLED: print(f"End of turn: {boss}")
+        logging.debug(f"End of turn: {player}")
+        logging.debug(f"End of turn: {boss}")
 
         # swap players
         current_player, other_player = other_player, current_player

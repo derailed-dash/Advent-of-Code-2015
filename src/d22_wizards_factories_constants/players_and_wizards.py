@@ -1,9 +1,10 @@
 """Player Class"""
 from __future__ import absolute_import, annotations
+import logging
 from math import ceil
 from dataclasses import dataclass
 
-# pylint: disable=too-few-public-methods, inherit-non-class
+# pylint: disable=too-few-public-methods, inherit-non-class, logging-fstring-interpolation
 class Player:
     """A player has three key attributes:
       hit_points (life) - When this reaches 0, the player has been defeated
@@ -66,7 +67,7 @@ class Player:
 
     def attack(self, other_player: Player):
         attack_damage = self.get_attack_damage(other_player)
-        # print(f"{self._name} attack. Inflicting damage: {attack_damage}.")
+        logging.debug(f"{self._name} attack. Inflicting damage: {attack_damage}.")
         other_player.take_hit(attack_damage)
     
     def __repr__(self):
@@ -311,7 +312,7 @@ class Wizard(Player):
             raise ValueError(f"Unable to cast {spell_key}: Not enough mana! " \
                                 f"Needed {spell.get_mana_cost()}; have {self._mana}.") from err
 
-        # print(f"{self._name} casted {spell}")
+        logging.debug(f"{self._name} casted {spell}")
 
         if spell.is_effect():
             # add to active effects, apply later
@@ -322,12 +323,12 @@ class Wizard(Player):
             # opponent's armor counts for nothing against a magical attack
             attack_damage = spell.get_damage()
             if attack_damage:
-                # print(f"{self._name} attack. Inflicting damage: {attack_damage}.")
+                logging.debug(f"{self._name} attack. Inflicting damage: {attack_damage}.")
                 other_player.take_hit(attack_damage)
 
             heal = spell.get_heal()
             if heal:
-                # print(f"{self._name}: healing by {heal}.") 
+                logging.debug(f"{self._name}: healing by {heal}.") 
                 self._hit_points += heal
 
         return spell.get_mana_cost()                        
@@ -336,7 +337,7 @@ class Wizard(Player):
         effects_to_remove = []
         for effect_name, effect in self._active_effects.items():
             if effect.get_effect_applied_count() >= effect.get_duration():
-                # print(f"{self._name}: fading effect {effect_name}")
+                logging.debug(f"{self._name}: fading effect {effect_name}")
                 if effect.get_armor():
                     # restore armor to pre-effect levels
                     self._armor -= effect.get_armor()
@@ -359,12 +360,12 @@ class Wizard(Player):
             if effect.get_effect_applied_count() < effect.get_duration():
                 # effects apply on the turn after they are cast (i.e. start on the opponent's turn)
                 if effect.get_delay_start() > 0:
-                    # print(f"{self._name}: effect {effect_name} starts on next turn.")
+                    logging.debug(f"{self._name}: effect {effect_name} starts on next turn.")
                     effect.decrement_delay_start()
                 else:
                     effect.increment_effect_applied_count()
-                    # print(f"{self._name}: applying effect {effect_name}, " \
-                            # f"leaving {effect.get_duration() - effect.get_effect_applied_count()} turns.")
+                    logging.debug(f"{self._name}: applying effect {effect_name}, " \
+                             f"leaving {effect.get_duration() - effect.get_effect_applied_count()} turns.")
 
                     if effect.get_armor():
                         if effect.get_effect_applied_count() == 1:

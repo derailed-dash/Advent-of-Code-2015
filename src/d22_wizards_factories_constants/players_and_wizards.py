@@ -141,11 +141,7 @@ class SpellFactory:
 
         # spell already active
         if spell_type in wiz.get_active_effects():
-            spell = wiz.get_active_effects()[spell_type]
-            turns_left = spell.get_duration() - spell.get_effect_applied_count()
-
-            if turns_left > 1:
-                raise ValueError(f"Spell {spell_type} already active, with {turns_left} turns remaining.")
+            raise ValueError(f"Spell {spell_type} already active.")
     
     @classmethod
     def create_spell(cls, spell_type: str):
@@ -185,10 +181,6 @@ class Spell:
         self._mana_regen = spell_type.mana_regen
         self._effect_applied_count = 0
 
-        # effects apply on the turn after they are cast
-        if self._is_effect:
-            self._delay_start = 1
-
     def __repr__(self) -> str:
         return f"Spell: {self._name}, cost: {self._mana_cost}, " \
                     f"is effect: {self._is_effect}, remaining duration: {self._duration}"
@@ -214,12 +206,6 @@ class Spell:
     def get_mana_regen(self):
         return self._mana_regen 
     
-    def get_delay_start(self):
-        return self._delay_start
-
-    def decrement_delay_start(self):
-        self._delay_start -= 1
-
     def get_effect_applied_count(self):
         return self._effect_applied_count
 
@@ -274,9 +260,9 @@ class Wizard(Player):
         Returns:
             int: The mana consumed by this turn
         """
-        mana_consumed = self.cast_spell(spell_key, other_player)
         self.apply_effects(other_player)
         self.fade_effects()
+        mana_consumed = self.cast_spell(spell_key, other_player)
 
         return mana_consumed
 
@@ -358,25 +344,20 @@ class Wizard(Player):
         for effect_name, effect in self._active_effects.items():
             # if effect should be active if we've used it fewer times than the duration
             if effect.get_effect_applied_count() < effect.get_duration():
-                # effects apply on the turn after they are cast (i.e. start on the opponent's turn)
-                if effect.get_delay_start() > 0:
-                    logging.debug("%s: effect %s starts on next turn.", self._name, effect_name)
-                    effect.decrement_delay_start()
-                else:
-                    effect.increment_effect_applied_count()
-                    logging.debug("%s: applying effect %s, leaving %d turns.", 
-                            self._name, effect_name, effect.get_duration() - effect.get_effect_applied_count())
+                effect.increment_effect_applied_count()
+                logging.debug("%s: applying effect %s, leaving %d turns.", 
+                        self._name, effect_name, effect.get_duration() - effect.get_effect_applied_count())
 
-                    if effect.get_armor():
-                        if effect.get_effect_applied_count() == 1:
-                            # increment armor on first use, and persist this level until the effect fades
-                            self._armor += effect.get_armor()
+                if effect.get_armor():
+                    if effect.get_effect_applied_count() == 1:
+                        # increment armor on first use, and persist this level until the effect fades
+                        self._armor += effect.get_armor()
 
-                    if effect.get_damage():
-                        other_player.take_hit(effect.get_damage())
-                    
-                    if effect.get_mana_regen():
-                        self._mana += effect.get_mana_regen()
+                if effect.get_damage():
+                    other_player.take_hit(effect.get_damage())
+                
+                if effect.get_mana_regen():
+                    self._mana += effect.get_mana_regen()
         
     def attack(self, other_player: Player):
         """ A Wizard cannot perform a mundane attack.

@@ -4,9 +4,6 @@ Date: 09/04/2021
 
 Solving https://adventofcode.com/2015/day/22
 
-// Overview
-
-
 Solution:
 
 Part 1:
@@ -45,7 +42,7 @@ def main():
         4: SpellFactory.SpellConstants.RECHARGE
     }
 
-    attack_combos_lookups = attack_combos_generator(13, spell_key_lookup)
+    attack_combos_lookups = attack_combos_generator(13, len(spell_key_lookup))
 
     winning_games = {}
     least_winning_mana = 10000
@@ -53,6 +50,8 @@ def main():
     player_has_won = False
     
     for attack_combo_lookup in attack_combos_lookups:
+        # since attack combos are returned sequentially, 
+        # we can ignore any that start with the same attacks as the last failed combo.
         if attack_combo_lookup.startswith(ignore_combo):
             continue  
         
@@ -65,7 +64,7 @@ def main():
         else:
             logging.info("Current attack: %s", attack_combo_lookup)
 
-        # Convert the attack combo to a list of attacks.
+        # Convert the attack combo to a list of spells.
         attack_combo = [spell_key_lookup[int(key)] for key in attack_combo_lookup]
         player_won, mana_consumed, rounds_started = play_game(attack_combo, player, boss, mana_target=least_winning_mana)
         if player_won:
@@ -73,6 +72,7 @@ def main():
             winning_games[mana_consumed] = attack_combo_lookup
             least_winning_mana = min(mana_consumed, least_winning_mana)      
         
+        # we can ingore any attacks that start with the same attacks as what we tried last time
         ignore_combo = attack_combo_lookup[0:rounds_started]
             
                 
@@ -95,16 +95,26 @@ def to_base_n(number: int, base: int):
     return ret_str
 
 
-def attack_combos_generator(max_attacks: int, spell_key_lookup: dict) -> Iterable[str]:
-    attack_indeces = len(spell_key_lookup)
-    num_attack_combos = (attack_indeces**max_attacks)
+def attack_combos_generator(max_attacks: int, count_different_attacks: int) -> Iterable[str]:
+    """ Generator that returns the next attack combo.
+    E.g. with a max of 3 attacks, and 5 different attacks, 
+    the generator will return a max of 5**3 = 125 different attack combos
+
+    Args:
+        max_attacks (int): Maximum number of attacks to return before exiting
+        count_different_attacks (int): How many different attacks we can make
+
+    Yields:
+        Iterator[Iterable[str]]: Next attack sequence
+    """
+    num_attack_combos = count_different_attacks**max_attacks
     
-    # build up a list of attack_combos. E.g.
-    # [0, 0, 0], [0, 0, 1], [0, 0, 2], [0, 0, 3], [0, 0, 4], [0, 1, 0], [0, 1, 1], [0, 1, 2], etc
+    # yield the next attack combo, i.e. from 
+    # 000, 001, 002, 003, 004, 010, 011, 012, 013, 014, 020, 021, 022, 023, 024, etc
     for i in range(num_attack_combos):
         # convert i to base-n (where n is the number of attacks we can choose from), 
-        # and then pad with zeroes until we have max number of attacks
-        yield to_base_n(i, attack_indeces).zfill(max_attacks)
+        # and then pad with zeroes such that str length is the same as total number of attacks
+        yield to_base_n(i, count_different_attacks).zfill(max_attacks)
 
 
 def play_game(attacks: list, player: Wizard, boss: Player, **kwargs) -> tuple[bool, int, int]:
@@ -165,13 +175,13 @@ def play_game(attacks: list, player: Wizard, boss: Player, **kwargs) -> tuple[bo
 
 
 def process_boss_input(data:list[str]) -> tuple:
-    """ Process boss file input and return tuple of hit_points, damage and armor
+    """ Process boss file input and return tuple of hit_points, damage
 
     Args:
         data (List[str]): input file lines
 
     Returns:
-        tuple: hit_points, damage, armor
+        tuple: hit_points, damage
     """
     boss = {}
     for line in data:

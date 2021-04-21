@@ -73,10 +73,10 @@ def specific_attack(attack_str: str):
     do_test_game("TEST: ATTACK " + attack_str, attacks, player, boss)
     
 def do_tests():
-    # test_attacks()
+    test_attacks()
     # not_enough_mana()
-    # spell_already_active()
-    specific_attack('0342342030000')
+    spell_already_active()
+    # specific_attack('0342342030000')
     # specific_attack('4324320030000')
 
 

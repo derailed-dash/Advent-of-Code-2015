@@ -42,7 +42,7 @@ def main():
         4: SpellFactory.SpellConstants.RECHARGE
     }
 
-    attack_combos_lookups = attack_combos_generator(13, len(spell_key_lookup))
+    attack_combos_lookups = attack_combos_generator(14, len(spell_key_lookup))
 
     winning_games = {}
     least_winning_mana = 10000
@@ -147,7 +147,8 @@ def play_game(attacks: list, player: Wizard, boss: Player, **kwargs) -> tuple[bo
             try:
                 mana_consumed += player.take_turn(attacks[i-1], boss)
                 if mana_target and mana_consumed > mana_target:
-                    raise ValueError(f'Mana target {mana_target} exceeded; mana consumed={mana_consumed}.')
+                    logging.debug('Mana target %s exceeded; mana consumed=%s.', mana_target, mana_consumed)
+                    return False, mana_consumed, i
             except ValueError as err:
                 logging.debug(err)
                 return False, mana_consumed, i

@@ -21,16 +21,14 @@ import time
 from typing import Iterable
 from d22_wizards_factories_constants.players_and_wizards import Player, Wizard, SpellFactory
 
-# pylint: disable=multiple-statements, logging-fstring-interpolation
+# pylint: disable=multiple-statements
 
 SCRIPT_DIR = os.path.dirname(__file__) 
 BOSS_FILE = "input/boss_stats.txt"
 
-# logging.basicConfig(level=logging.DEBUG)
-logging.basicConfig(level=logging.INFO)
-
 # pylint
 def main():
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s:%(levelname)s:\t%(message)s")
     boss_file = os.path.join(SCRIPT_DIR, BOSS_FILE)
     
     # boss stats are determined by an input file
@@ -47,11 +45,13 @@ def main():
         4: SpellFactory.SpellConstants.RECHARGE
     }
 
-    attack_combos_lookups = attack_combos_generator(12, spell_key_lookup)
+    attack_combos_lookups = attack_combos_generator(13, spell_key_lookup)
 
     winning_games = {}
     least_winning_mana = 10000
     ignore_combo = "9999999"
+    player_has_won = False
+    
     for attack_combo_lookup in attack_combos_lookups:
         if attack_combo_lookup.startswith(ignore_combo):
             continue  
@@ -59,14 +59,19 @@ def main():
         boss = Player("Boss", hit_points=boss_hit_points, damage=boss_damage, armor=0)
         player = Wizard("Bob", hit_points=50, mana=500)
     
-        logging.info(f"Mana target: {least_winning_mana}")
-        logging.info(f"Current attack: {attack_combo_lookup}")
+        if player_has_won:
+            logging.info("Best winning attack: %s. Total mana: %s. Current attack: %s", 
+                        winning_games[least_winning_mana], least_winning_mana, attack_combo_lookup)
+        else:
+            logging.info("Current attack: %s", attack_combo_lookup)
+
         # Convert the attack combo to a list of attacks.
         attack_combo = [spell_key_lookup[int(key)] for key in attack_combo_lookup]
         player_won, mana_consumed, rounds_started = play_game(attack_combo, player, boss, mana_target=least_winning_mana)
         if player_won:
+            player_has_won = True
             winning_games[mana_consumed] = attack_combo_lookup
-            least_winning_mana = min(mana_consumed, least_winning_mana)
+            least_winning_mana = min(mana_consumed, least_winning_mana)      
         
         ignore_combo = attack_combo_lookup[0:rounds_started]
             
@@ -123,33 +128,34 @@ def play_game(attacks: list, player: Wizard, boss: Player, **kwargs) -> tuple[bo
     while (player.get_hit_points() > 0 and boss.get_hit_points() > 0):
         if current_player == player:
             # player (wizard) attack
-            logging.debug(f"\nRound {i}...")
+            logging.debug("")
+            logging.debug("Round %s...", i)
 
-            logging.debug(f"{current_player.get_name()}'s turn:")
+            logging.debug("%s's turn:", current_player.get_name())
             try:
                 mana_consumed += player.take_turn(attacks[i-1], boss)
                 if mana_target and mana_consumed > mana_target:
                     raise ValueError(f'Mana target {mana_target} exceeded; mana consumed={mana_consumed}.')
             except ValueError as err:
-                print(err)
+                logging.debug(err)
                 return False, mana_consumed, i
             except IndexError:
-                print("No more attacks left.")
+                logging.debug("No more attacks left.")
                 return False, mana_consumed, i
 
         else:
-            logging.debug(f"{current_player.get_name()}'s turn:")
+            logging.debug("%s's turn:", current_player.get_name())
             # effects apply before opponent attacks
             player.opponent_takes_turn(boss)
             if boss.get_hit_points() <= 0:
-                logging.debug(f"Effects killed {boss.get_name()}!")
+                logging.debug("Effects killed %s!", boss.get_name())
                 continue
 
             boss.attack(other_player)
             i += 1
 
-        logging.debug(f"End of turn: {player}")
-        logging.debug(f"End of turn: {boss}")
+        logging.debug("End of turn: %s", player)
+        logging.debug("End of turn: %s", boss)
 
         # swap players
         current_player, other_player = other_player, current_player

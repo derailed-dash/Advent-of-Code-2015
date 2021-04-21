@@ -111,6 +111,7 @@ def attack_combos_generator(max_attacks: int, count_different_attacks: int) -> I
     
     # yield the next attack combo, i.e. from 
     # 000, 001, 002, 003, 004, 010, 011, 012, 013, 014, 020, 021, 022, 023, 024, etc
+    # Let's return them in reverse, to give us a nice countdown
     for i in range(num_attack_combos):
         # convert i to base-n (where n is the number of attacks we can choose from), 
         # and then pad with zeroes such that str length is the same as total number of attacks
@@ -124,6 +125,7 @@ def play_game(attacks: list, player: Wizard, boss: Player, **kwargs) -> tuple[bo
         attacks (list[str]): List of spells to cast, from SpellFactory.SpellConstants
         player (Wizard): A Wizard
         boss (Player): A mundane opponent
+        mana_target (int): optional arg, that specifies a max mana consumed value which triggers a return
 
     Returns:
         tuple[bool, int, int]: Whether the player won, the amount of mana consumed, and the number of rounds started

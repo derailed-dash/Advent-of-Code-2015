@@ -48,17 +48,17 @@ def spell_already_active():
     ]    
     do_test_game("TEST: SPELL ALREADY ACTIVE", attacks, player, boss)
 
-def do_test_game(game_label: str, attacks: list[str], player: Wizard, boss: Player):
+def do_test_game(game_label: str, attacks: list[str], player: Wizard, boss: Player, hard_mode = False):
     logging.debug(f"*** {game_label} ***")
     
     logging.debug(f"{player}")
     logging.debug(boss)
   
-    player_won, mana_consumed, rounds_started = pg(attacks, player, boss)
+    player_won, mana_consumed, rounds_started = pg(attacks, player, boss, hard_mode=hard_mode)
     logging.debug(f"Player won? {player_won}. Mana consumed: {mana_consumed}. Rounds started: {rounds_started}.")  
     logging.debug("")
 
-def specific_attack(attack_str: str):
+def specific_attack(attack_str: str, hard_mode = False):
     player = Wizard("Bob", hit_points=50, mana=500)
     boss = Player("Boss Socks", hit_points=71, damage=10, armor=0)
         
@@ -70,14 +70,13 @@ def specific_attack(attack_str: str):
         4: SpellFactory.SpellConstants.RECHARGE
     }
     attacks = [spell_key_lookup[int(key)] for key in attack_str]
-    do_test_game("TEST: ATTACK " + attack_str, attacks, player, boss)
+    do_test_game("TEST: ATTACK " + attack_str, attacks, player, boss, hard_mode)
     
 def do_tests():
-    test_attacks()
+    # test_attacks()
     # not_enough_mana()
-    spell_already_active()
-    # specific_attack('0342342030000')
-    # specific_attack('4324320030000')
+    # spell_already_active()
+    specific_attack('43243243203000', hard_mode=True)
 
 
 do_tests()

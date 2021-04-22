@@ -5,11 +5,23 @@ Date: 09/04/2021
 Solving https://adventofcode.com/2015/day/22
 
 Solution:
+    Wizard class overrides Player class.
+    We have a SpellFactory, which creates instances of Spell, passing in SpellType dataclasss instances.
 
 Part 1:
+    We need to find the combination of attacks that uses the least mana.
+    We use a generator to yield successive attack combos.
+    For each combo, we play the game and store the mana used.
+    Games are considered lost if the opponent wins, or a given spell combo is invalid (e.g. not enough mana).
+    As we yield the next combo, we skip any combos that have the same starting sequence as a previous game.
+    
+    It works, but it requires a combo with 14 attacks for the lowest mana win.
+    With 5 different atttacks, this means 5**14 attack sequences, i.e. >6 billion sequences!
+    So, it takes a while.
 
 Part 2:
-
+    Simply deduct one hit point for every player turn in a game.  This reduces the number of winning games.
+    Fortunately, still solved with attack sequences with 14 attacks.
 """
 from __future__ import absolute_import
 import logging
@@ -66,7 +78,7 @@ def main():
 
         # Convert the attack combo to a list of spells.
         attack_combo = [spell_key_lookup[int(key)] for key in attack_combo_lookup]
-        player_won, mana_consumed, rounds_started = play_game(attack_combo, player, boss, mana_target=least_winning_mana)
+        player_won, mana_consumed, rounds_started = play_game(attack_combo, player, boss, hard_mode=True, mana_target=least_winning_mana)
         if player_won:
             player_has_won = True
             winning_games[mana_consumed] = attack_combo_lookup
@@ -74,6 +86,8 @@ def main():
         
         # we can ingore any attacks that start with the same attacks as what we tried last time
         ignore_combo = attack_combo_lookup[0:rounds_started]
+        
+    print(f"We found {len(winning_games)} winning solutions. Lowest mana cost was {least_winning_mana}.")
             
                 
 def to_base_n(number: int, base: int):
@@ -118,13 +132,14 @@ def attack_combos_generator(max_attacks: int, count_different_attacks: int) -> I
         yield to_base_n(i, count_different_attacks).zfill(max_attacks)
 
 
-def play_game(attacks: list, player: Wizard, boss: Player, **kwargs) -> tuple[bool, int, int]:
+def play_game(attacks: list, player: Wizard, boss: Player, hard_mode=False, **kwargs) -> tuple[bool, int, int]:
     """ Play a game, given a player (Wizard) and an opponent (boss)
 
     Args:
         attacks (list[str]): List of spells to cast, from SpellFactory.SpellConstants
         player (Wizard): A Wizard
         boss (Player): A mundane opponent
+        hard_mode (Bool): Whether each player turn automatically loses 1 hit point
         mana_target (int): optional arg, that specifies a max mana consumed value which triggers a return
 
     Returns:
@@ -144,6 +159,12 @@ def play_game(attacks: list, player: Wizard, boss: Player, **kwargs) -> tuple[bo
             logging.debug("Round %s...", i)
 
             logging.debug("%s's turn:", current_player.get_name())
+            if hard_mode:
+                logging.debug("Hard mode hit. Player hit points reduced by 1.")
+                player.take_hit(1)
+                if player.get_hit_points() <= 0:
+                    logging.debug("Hard mode killed %s", boss.get_name())
+                    continue
             try:
                 mana_consumed += player.take_turn(attacks[i-1], boss)
                 if mana_target and mana_consumed > mana_target:

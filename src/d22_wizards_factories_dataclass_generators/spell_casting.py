@@ -28,7 +28,7 @@ import logging
 import os
 import time
 from typing import Iterable
-from d22_wizards_factories_constants.players_and_wizards import Player, Wizard, SpellFactory
+from d22_wizards_factories_dataclass_generators.players_and_wizards import Player, Wizard, SpellFactory
 
 # pylint: disable=multiple-statements
 

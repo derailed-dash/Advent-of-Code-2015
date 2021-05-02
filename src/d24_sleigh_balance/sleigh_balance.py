@@ -46,7 +46,15 @@ def main():
 
         # now determine permutations of packages that give the same weight in each bag.
         # e.g. we want permutations of package weights where (2, 3, 5) packages result in 3 bags that weigh the same
-        # we need to recurse now...
+        # Probably need recursion
+        
+def recursive_sub_sum(num_packages, target):
+    if num_packages <= 1:
+        yield [target]
+    else:
+        for i in range(target + 1):
+            for value in recursive_sub_sum(num_packages-1, target- i):
+                yield [i] + value
             
     
 def get_bag_size_combos(package_counts: list[int], total_packages: int, num_bags: int):

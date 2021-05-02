@@ -16,7 +16,7 @@ from __future__ import absolute_import
 import logging
 import os
 import time
-from itertools import combinations, combinations_with_replacement, permutations
+from itertools import combinations_with_replacement
 
 # pylint: disable=logging-fstring-interpolation
 
@@ -43,7 +43,7 @@ def main():
     bags_count_combos = get_bag_size_combos(list(range(1, package_count)), package_count, NUMBER_OF_BAGS)
     for bag_count_combo in bags_count_combos:
         logging.debug(f"Bag count combo: {bag_count_combo}")
-        
+
         # now determine permutations of packages that give the same weight in each bag.
         # e.g. we want permutations of package weights where (2, 3, 5) packages result in 3 bags that weigh the same
         # we need to recurse now...

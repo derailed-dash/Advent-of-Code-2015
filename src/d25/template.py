@@ -15,6 +15,7 @@ Part 2:
 
 """
 from __future__ import absolute_import
+import logging
 import os
 import time
 import re
@@ -24,6 +25,8 @@ INPUT_FILE = "input/input.txt"
 SAMPLE_INPUT_FILE = "input/sample_input.txt"
 
 def main():
+    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s:%(levelname)s:\t%(message)s")
+        
     # input_file = os.path.join(SCRIPT_DIR, SAMPLE_INPUT_FILE)
     input_file = os.path.join(SCRIPT_DIR, INPUT_FILE)
     with open(input_file, mode="rt") as f:

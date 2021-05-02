@@ -20,7 +20,6 @@ from __future__ import absolute_import
 import logging
 import os
 import time
-from typing import List
 
 SCRIPT_DIR = os.path.dirname(__file__) 
 INPUT_FILE = "input/input.txt"
@@ -120,7 +119,7 @@ def run_program(program, registers):
         instr_pointer += 1
 
 
-def process_input(data: List[str]) -> List:
+def process_input(data: list[str]) -> list:
     """Input is a list of instructions.  Convert to a list of instructions.
     Each instruction takes the format [instr, register, offset]
     Note: Register is None for JMP instructions.

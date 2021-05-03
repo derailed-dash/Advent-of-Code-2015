@@ -1,10 +1,8 @@
 """ 
 Author: Darren
-Date: 01/02/2021
+Date: 03/05/2021
 
-Solving https://adventofcode.com/2015/day/10
-
-// Overview
+Solving https://adventofcode.com/2015/day/25
 
 
 Solution:
@@ -18,7 +16,6 @@ from __future__ import absolute_import
 import logging
 import os
 import time
-import re
 
 SCRIPT_DIR = os.path.dirname(__file__) 
 INPUT_FILE = "input/input.txt"

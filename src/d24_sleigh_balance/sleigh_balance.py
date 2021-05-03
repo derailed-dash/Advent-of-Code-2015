@@ -9,10 +9,14 @@ We require three bags of equal weight.
    Bags 2 and 3 to either side.
    
 Solution:
-
-Part 1:
-
-Part 2:
+   Use subset sum function to work out which combinations of packages adds up to 
+   total weight / number of bags (compartments).
+   The faster subsum is about 3x quicker than the version that uses itertools.combinations.
+   Once we have all combinations for the first bag, sort by the number of packages, 
+   since we want the first bag to have fewest possible packages.
+   
+   We don't care about what's in bags 2, 3...
+   I.e. because we know we will have valid combinations of packages that will add up to the same weight
 
 """
 from __future__ import absolute_import
@@ -35,66 +39,92 @@ def main():
     # input_file = os.path.join(SCRIPT_DIR, SAMPLE_INPUT_FILE)
     input_file = os.path.join(SCRIPT_DIR, INPUT_FILE)
     with open(input_file, mode="rt") as f:
-        package_weights = set(int(x) for x in f.read().splitlines())
+        package_weights = [int(x) for x in f.read().splitlines()]
     
+    logging.info(f"Package weights: {package_weights}")
+
     # Part 1
-    distribute_packages(package_weights, 3)
+    optimum_solution = distribute_packages(package_weights, 3)
+    logging.info(f"Solution found with QE {get_quantum_entanglement(optimum_solution)}")
+    logging.info(f"First bag: {optimum_solution}")
     
     # Part 2
-    # distribute_packages(package_weights, 4)
+    optimum_solution = distribute_packages(package_weights, 4)
+    logging.info(f"Solution found with QE {get_quantum_entanglement(optimum_solution)}")
+    logging.info(f"First bag: {optimum_solution}")
 
 
-def distribute_packages(package_weights, number_of_bags):
+def distribute_packages(package_weights, number_of_bags) -> tuple:
     logging.info(f"Solving for {number_of_bags} bags")
     
     package_count = len(package_weights)
     total_weight = sum(package_weights)
     target_weight_per_bag = total_weight // number_of_bags
     
-    logging.debug(f"Package weights: {package_weights}")
     logging.debug(f"Total packages: {package_count}, with total weight: {total_weight}")
     logging.debug(f"Target weight per bag: {target_weight_per_bag}")
+
+    # Get all combos for first bag.
+    # Sort by bags in the combo, since the first bag should have fewest packages.    
+    first_bag_combos = faster_subset_sum(package_weights, target_weight_per_bag)
+    first_bag_combos = sorted(first_bag_combos, key=len)
     
-    first_bag_combos = subset_sum(package_weights, target_weight_per_bag)
-    # sort by set size, since the first bag should have fewest packages
-    first_bag_combos = sorted(first_bag_combos, key=lambda x: len(x))
-    
-    shortest_bag_length = package_count
-    lowest_quantum_entanglement = get_quantum_entanglement(tuple(package_weights))
-    
+    # store first bag of optimum solution
+    optimum_solution = tuple()
+        
     for first_bag_combo in first_bag_combos:
         # First bag must have smallest number of packages
         # Skip any bag combos that have more packages than a previous solution
-        if len(first_bag_combo) > shortest_bag_length:
-            continue
-        
-        # Skip any solutions with higher QE than existing solutions
-        if get_quantum_entanglement(first_bag_combo) >= lowest_quantum_entanglement:
-            continue
-        
-        remaining_package_weights = package_weights - set(first_bag_combo)
-        for second_bag_combo in subset_sum(remaining_package_weights, target_weight_per_bag):
-            if len(second_bag_combo) < len(first_bag_combo):
+        if len(optimum_solution) > 0:
+            if len(first_bag_combo) > len(optimum_solution):
                 continue
             
-            third_bag_combo = tuple(remaining_package_weights - set(second_bag_combo))
-            if len(third_bag_combo) < len(second_bag_combo):
+            # if quantum entanglement of the first bag is higher than an existing solution,
+            # then skip it
+            if get_quantum_entanglement(first_bag_combo) >= get_quantum_entanglement(optimum_solution):
                 continue
             
-            shortest_bag_length = len(first_bag_combo)
-            lowest_quantum_entanglement = get_quantum_entanglement(first_bag_combo)
-            logging.info(f"Solution found with QE {lowest_quantum_entanglement}")
-            logging.info(f"First bag: {first_bag_combo}")
-            
-            # We don't need any more ways of organising the other bags
-            break
+        optimum_solution = first_bag_combo
+        
+    return optimum_solution
             
 
 def get_quantum_entanglement(bag: tuple):
     return prod(bag)
 
 
-def subset_sum(items, target: int) -> tuple:
+def faster_subset_sum(items: list, target: int, partial=[], results=[]) -> list:
+    """
+    Determine all combinations of list items that add up to the target
+    
+    Args:
+        numbers (list): A list of values
+        target (int): The total that the values need to add up to
+        partial (list, optional): Used by the function. Defaults to [].
+        results (list, optional): Used by the function. Defaults to [].
+
+    Returns:
+        list: The list of valid combinations
+    """
+    total = sum(partial)
+
+    # check if the partial sum is equals to target, and if so
+    # add the current terms to the results list
+    if total == target:
+        results.append(partial)
+        
+    # if the partial sum equals or exceed the target, no point in recursing through remaining terms.
+    if total >= target:
+        return []
+
+    for i, item in enumerate(items):
+        remaining_numbers = items[i + 1:]
+        faster_subset_sum(remaining_numbers, target, partial + [item], results)
+
+    return results
+
+
+def simple_subset_sum(items, target: int) -> tuple:
     """ Return a tuple of any combinations of items that adds up to the target
 
     Args:
@@ -104,8 +134,7 @@ def subset_sum(items, target: int) -> tuple:
     Yields:
         Iterator[tuple]: Items that achieve the desired sum
     """
-    # Iterating through all possible
-    # subsets of arr from lengths 0 to n:
+    # Iterating through all possible subsets of collection from lengths 0 to n:
     for i in range(len(items)+1):
         for subset in combinations(items, i):
               

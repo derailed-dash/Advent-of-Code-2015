@@ -34,12 +34,10 @@ Part 2:
     Use regex to get the index of the only instruction that ends "-> b" and replace the instruction in the data.
     Then re-run the parse.
 """
-import sys
 import os
 import time
 import re
 from functools import reduce
-from pprint import pp
 from parsimonious import Grammar, NodeVisitor, ParseError, VisitationError
 
 SCRIPT_DIR = os.path.dirname(__file__) 
@@ -66,7 +64,6 @@ class BitwiseLogicVisitor(NodeVisitor):
         ''' First arg is the string to be parsed
             Second arg is expected to be a dict that maps wire names to wire values
         '''
-
         self._wires_dict = args[1]
         self._inputs = []
         self._op = ""
@@ -175,7 +172,7 @@ def process_instructions(data, blc_visitor):
             # print(blc_visitor.grammar.parse(line))
             try:
                 results.update(blc_visitor.parse(line, results))
-                # if we're here, the instructino parsed successfully, so remove it from the stack permanently
+                # if we're here, the instruction parsed successfully, so remove it from the stack permanently
                 data.pop(i)
             except (ParseError, VisitationError, KeyError):
                 # if the parser tries to retrieve a wire value that is not yet known

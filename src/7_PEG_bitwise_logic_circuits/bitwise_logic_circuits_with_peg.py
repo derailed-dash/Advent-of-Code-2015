@@ -48,12 +48,12 @@ SAMPLE_INPUT_FILE = "input/sample_input.txt"
 # EXPR matches any whole line
 # Note, wires can be one or two chars in name, e.g. a, aa, xy.
 grammar = Grammar(r"""
-    EXPR = INPUT? (OP INPUT)? FEEDS WIRE
-    INPUT = (NUMBER / WIRE) ws+
-    OP = ("AND" / "OR" / "LSHIFT" / "RSHIFT" / "NOT") ws+
-    NUMBER = ~r"\d+"
-    FEEDS = "-> "
-    WIRE = ~r"[a-z]{1,2}"
+    expr = input? (op input)? feeds wire
+    input = (number / wire) ws+
+    op = ("AND" / "OR" / "LSHIFT" / "RSHIFT" / "NOT") ws+
+    number = ~r"\d+"
+    feeds = "-> "
+    wire = ~r"[a-z]{1,2}"
     ws = ~"\s"
 """)
 
@@ -98,28 +98,28 @@ class BitwiseLogicVisitor(NodeVisitor):
         # Wire name and wire value, as dict
         return self._output
 
-    def visit_EXPR(self, node, visited_children):
+    def visit_expr(self, node, visited_children):
         # here we can print the overall expr being parsed
         # print(f"EXPR Node: {node}; visited_children: {visited_children}")
         pass
 
-    def visit_INPUT(self, node, visited_children):
+    def visit_input(self, node, visited_children):
         pass
 
-    def visit_FEEDS(self, node, visited_children):
+    def visit_feeds(self, node, visited_children):
         # change state so that the next WIRE we parse is treated as output
         self._processing_input = False
 
-    def visit_OP(self, node, visited_children):
+    def visit_op(self, node, visited_children):
         self._op = node.text.strip()       
         return self._op
 
-    def visit_NUMBER(self, node, visited_children):
+    def visit_number(self, node, visited_children):
         number = int(node.text)
         self._inputs.append(number)
         return number
 
-    def visit_WIRE(self, node, visited_children):
+    def visit_wire(self, node, visited_children):
         # a wire is always passed as a str designation.
 
         wire = node.text.strip()
